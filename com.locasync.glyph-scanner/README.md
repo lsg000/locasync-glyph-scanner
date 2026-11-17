@@ -13,14 +13,14 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 ## Requirements
 
 - Unity 2022.3 or newer (Unity 6 supported)
-- TextMeshPro (`com.unity.textmeshpro`, or `com.unity.ugui` 2.0+ on Unity 6). The tool compiles only when TMP is present.
+- TextMeshPro (`com.unity.textmeshpro`, or `com.unity.ugui` 2.0+ on Unity 6). TMP must be installed; it is by default in Unity 6 and in the standard 2022.3 templates.
 
 ## Install
 
 Package Manager → **+** → **Add package from git URL…**
 
 ```
-https://github.com/<you>/<repo>.git?path=/com.locasync.glyph-scanner
+https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner
 ```
 
 Or **Add package from disk…** and pick `com.locasync.glyph-scanner/package.json`.
