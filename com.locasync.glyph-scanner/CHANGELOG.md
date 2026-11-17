@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2026-11-17
+
+### Changed
+- Each Column → Font binding is now drawn as one row (`column → font field`) instead of a collapsed foldout per binding, so you can assign fonts without expanding every element.
+
 ## [0.1.1] - 2026-11-17
 
 ### Fixed
