@@ -1,0 +1,13 @@
+key,en,ko,ja,zh-Hans,# notes
+menu/start,Start,시작,スタート,开始,
+menu/options,<b>Options</b>,<b>옵션</b>,<b>オプション</b>,<b>选项</b>,bold via rich text
+dialog/greeting,"Hello, {playerName}!","안녕하세요, {playerName}님!",こんにちは、{playerName}さん！,"你好，{playerName}！",placeholder is not scanned
+dialog/multiline,"Line one
+Line two","첫째 줄
+둘째 줄","一行目
+二行目","第一行
+第二行",line break inside a quoted cell
+shop/price,<color=#FFD700>{0:N0}</color> gold,<color=#FFD700>{0:N0}</color> 골드,<color=#FFD700>{0:N0}</color> ゴールド,<color=#FFD700>{0:N0}</color> 金币,
+event/party,Party time 🎉,파티 시간 🎉,パーティータイム 🎉,派对时间 🎉,emoji outside the Basic Multilingual Plane
+tutorial/literal,Type <noparse><b></noparse> for bold,<noparse><b></noparse>를 입력하면 굵게,<noparse><b></noparse>で太字,输入<noparse><b></noparse>加粗,noparse content is scanned
+#draft/unused,Not shipped,출시 안 함,未使用,未使用,rows whose key starts with # are skipped

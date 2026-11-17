@@ -1,0 +1,25 @@
+{
+    "name": "LocaSync.GlyphScanner.Editor.Tests",
+    "rootNamespace": "LocaSync.Editor.GlyphScanner.Tests",
+    "references": [
+        "LocaSync.GlyphScanner.Editor",
+        "Unity.TextMeshPro",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

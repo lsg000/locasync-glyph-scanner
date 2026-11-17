@@ -1,0 +1,23 @@
+# Unity sandbox projects used to develop the package (e.g. "My project/").
+# Only the package folder is the deliverable; generated folders are never committed.
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.slnx
+
+# Sandbox template content (~250 MB of sample scenes/art). Only its Packages/ and ProjectSettings/ are kept,
+# which is enough to recreate the sandbox and its link to the package.
+/My project/Assets/
+
+# IDE / OS
+.vs/
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
