@@ -29,19 +29,11 @@ namespace LocaSync.Editor.GlyphScanner
                 string error = null;
                 try
                 {
-                    if (request.result != UnityWebRequest.Result.Success)
-                    {
-                        error = "Download failed: " + request.error;
-                    }
-                    else if (IsHtml(request.GetResponseHeader("Content-Type")))
-                    {
-                        error = "The URL returned a web page instead of CSV/TSV. In Google Sheets use File > Share > " +
-                                "Publish to web (CSV), or set General access to 'Anyone with the link'.";
-                    }
-                    else
-                    {
-                        text = request.downloadHandler.text;
-                    }
+                    bool transportOk = request.result == UnityWebRequest.Result.Success ||
+                                       request.result == UnityWebRequest.Result.ProtocolError;
+                    error = DownloadDiagnosis.Describe(url, transportOk, request.responseCode,
+                        request.GetResponseHeader("Content-Type"), request.error);
+                    if (error == null) text = request.downloadHandler.text;
                 }
                 finally
                 {
@@ -60,8 +52,5 @@ namespace LocaSync.Editor.GlyphScanner
             };
             EditorApplication.update += poll;
         }
-
-        static bool IsHtml(string contentType) =>
-            !string.IsNullOrEmpty(contentType) && contentType.IndexOf("text/html", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 }

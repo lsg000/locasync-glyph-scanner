@@ -42,4 +42,5 @@ The first row must be a header row. Rows with an empty key, or a key starting wi
 
 - **Dynamic fonts**: a Dynamic font asset adds glyphs from its source font file at runtime. A character reported missing from a chain that contains a Dynamic font may still render, but only if the source font file has it. The scanner tells you when this applies.
 - **Plural / select forms** such as `{0:plural:item|items}` are scanned as written, because their words are rendered.
+- **Google Sheets: prefer CSV.** Share links are fetched as CSV automatically. If you publish to the web, choose CSV rather than TSV: Google's TSV export turns line breaks inside a cell into spaces, while CSV keeps them.
 - The scanner reads the font asset's character table directly. It does not call `HasCharacters` with `tryAddCharacter`, so scanning never changes your font assets.

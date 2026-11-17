@@ -3,6 +3,7 @@
 LocaSync Glyph Scanner: an editor-only Unity package that finds characters in localization tables missing from each language's TextMeshPro font chain. Being built as a free validation MVP before a paid Asset Store product.
 
 - `com.locasync.glyph-scanner/` is the UPM package (the deliverable). `My project/` is a throwaway Unity 6000.6.9f1 sandbox project that references it with `"file:../../com.locasync.glyph-scanner"` and lists it in `testables`. Only the package is shipped. Editor: `C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Unity.exe`. Batchmode tests need the editor closed, because only one instance can open a project.
+- Unity 2022.3.62f3 is also installed (`C:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Unity.exe`). On 2022.3 TMP is `com.unity.textmeshpro` 3.0.9 and the test framework is 1.1.33; on Unity 6 TMP comes from `com.unity.ugui` 2.x and the test framework is 1.8.0. Run tests on both before a release.
 - Supports Unity 2022.3 and Unity 6. Write C# 9 at most: block-scoped namespaces, no `record`, no `init`. No async in editor code. Poll with `EditorApplication.update` instead.
 - `Editor/Core/` and `Editor/Sources/SheetUrlNormalizer.cs` are pure logic with no TMP or UnityEditor calls. Keep them that way so EditMode tests in `Tests/Editor/` cover them. TMP-specific code lives in `Editor/Tmp/`.
 - Namespace `LocaSync.Editor.GlyphScanner`. Inside it the name `Editor` resolves to the namespace, so write `UnityEditor.Editor` in full.

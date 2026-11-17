@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.3] - 2026-11-17
+
+### Changed
+- Sheet download errors now say what to do. A private, missing or mistyped Google Sheet (HTTP 401/403/404) and a Google sign-in page both explain how to share the sheet. Network failures suggest checking the connection.
+- README: recommend CSV over TSV for Google Sheets, because Google's TSV export replaces line breaks inside cells with spaces.
+
+### Verified
+- Unity 2022.3.62f3 with TextMeshPro 3.0.9 and Unity 6000.6.9f1 with uGUI 2.6.0. In both, all 77 EditMode tests pass, and without TMP the notice appears with no compile errors.
+- Scanning from a Google Sheets share link gives the same results as the local CSV.
+
 ## [0.1.2] - 2026-11-17
 
 ### Changed
