@@ -132,7 +132,8 @@ namespace LocaSync.Editor.GlyphScanner
             EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.stripRichTextTags)));
             EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.stripPlaceholders)));
             EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.includeTmpSettingsFallbacks)),
-                new GUIContent("Include TMP Settings Fallbacks"));
+                new GUIContent("Global Fallbacks",
+                    "Also search the fallback fonts and default font set in TMP Settings, as TMP does at runtime."));
 
             _serializedProfile.ApplyModifiedProperties();
         }

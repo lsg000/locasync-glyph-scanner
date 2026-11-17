@@ -18,8 +18,20 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [
-        "UNITY_INCLUDE_TESTS"
+        "UNITY_INCLUDE_TESTS",
+        "LOCASYNC_HAS_TMP"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "1.0.0",
+            "define": "LOCASYNC_HAS_TMP"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "2.0.0",
+            "define": "LOCASYNC_HAS_TMP"
+        }
+    ],
     "noEngineReferences": false
 }

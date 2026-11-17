@@ -13,7 +13,7 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 ## Requirements
 
 - Unity 2022.3 or newer (Unity 6 supported)
-- TextMeshPro (`com.unity.textmeshpro`, or `com.unity.ugui` 2.0+ on Unity 6). TMP must be installed; it is by default in Unity 6 and in the standard 2022.3 templates.
+- TextMeshPro (`com.unity.textmeshpro`, or `com.unity.ugui` 2.0+ on Unity 6). Most templates include it. If it is missing, the package shows a notice that tells you what to install, instead of compile errors.
 
 ## Install
 

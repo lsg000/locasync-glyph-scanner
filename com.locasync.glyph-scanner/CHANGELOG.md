@@ -1,6 +1,12 @@
 # Changelog
 
-## [0.1.0] - Unreleased
+## [0.1.1] - 2026-11-17
+
+### Fixed
+- Installing into a project without TextMeshPro no longer causes compile errors. The scanner is left out of the build and a notice (Console warning plus the Window → LocaSync → Glyph Scanner menu item) explains which package to install.
+- The "Include TMP Settings Fallbacks" option label no longer gets cut off. It is now called "Global Fallbacks" and has a tooltip.
+
+## [0.1.0] - 2026-11-17
 
 ### Added
 - Glyph Scanner window (Window → LocaSync → Glyph Scanner) with reusable Glyph Scan Profile assets.

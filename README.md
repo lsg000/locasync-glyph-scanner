@@ -15,7 +15,7 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 Unity 2022.3+ or Unity 6, with TextMeshPro. Package Manager → **+** → **Add package from git URL…**
 
 ```
-https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner#v0.1.0
+https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner#v0.1.1
 ```
 
 Then open **Window → LocaSync → Glyph Scanner**. See the [package README](com.locasync.glyph-scanner/README.md) for the full walkthrough.
