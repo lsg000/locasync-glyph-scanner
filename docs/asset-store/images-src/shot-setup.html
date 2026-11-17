@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+  body { --w: 1920px; --h: 1080px; display: grid; grid-template-columns: 1fr 760px; gap: 90px; align-items: center; padding: 0 130px 0 140px; }
+  .copy { display: grid; gap: 46px; }
+  .stack { display: grid; gap: 30px; }
+  .source { display: flex; gap: 18px; flex-wrap: wrap; }
+  .chip { font-size: 26px; padding: 10px 22px; border-radius: 999px; background: var(--tile); border: 1px solid var(--tile-edge); color: #d6ddef; }
+</style></head>
+<body>
+  <div class="copy">
+    <div class="headline">One row per language.<br><em>No API keys.</em></div>
+    <ul class="bullets">
+      <li>Bind each language column to the TMP font asset that renders it</li>
+      <li>Save the setup as a profile your whole team can re-run</li>
+      <li>Google Sheets: paste the share link. No OAuth setup needed</li>
+    </ul>
+    <div class="source">
+      <span class="chip">CSV</span><span class="chip">TSV</span><span class="chip">Text Asset</span><span class="chip">Google Sheets link</span>
+    </div>
+  </div>
+  <div class="shot"><img src="../../images/scanner-setup.png" width="760" height="372" alt=""></div>
+</body></html>

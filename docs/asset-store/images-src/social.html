@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+  body { --w: 1200px; --h: 630px; display: flex; align-items: center; justify-content: center; }
+  .grid { position: relative; display: grid; grid-template-columns: repeat(7, 120px); gap: 26px; }
+  .tile { --size: 120px; }
+  .tile.ok { background: color-mix(in srgb, var(--ok) 10%, var(--tile)); }
+  .lens { width: 260px; height: 260px; left: 470px; top: 120px; }
+</style></head>
+<body>
+  <!-- Social media image: no text at all. Covered tiles (check marks) and missing tiles (tofu boxes). -->
+  <div class="grid">
+    <div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div>
+    <div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div><div class="tile ok"></div><div class="tile ok"></div>
+    <div class="tile ok"></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div>
+    <svg class="lens" viewBox="0 0 100 100">
+      <circle cx="40" cy="40" r="26" fill="rgba(79,209,197,0.12)" stroke="#4fd1c5" stroke-width="6"/>
+      <line x1="60" y1="60" x2="86" y2="86" stroke="#4fd1c5" stroke-width="9" stroke-linecap="round"/>
+    </svg>
+  </div>
+</body></html>

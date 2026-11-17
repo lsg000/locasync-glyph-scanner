@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+  body { --w: 420px; --h: 280px; display: flex; align-items: center; gap: 22px; padding: 0 26px; }
+  .art { position: relative; width: 128px; height: 150px; flex: none; }
+  .tile { --size: 96px; position: absolute; left: 0; top: 6px; }
+  .lens { left: 46px; top: 62px; width: 84px; height: 84px; }
+  .title { font-size: 36px; }
+</style></head>
+<body>
+  <!-- Card: only the asset title (and publisher) may appear as text. -->
+  <div class="art">
+    <div class="tile missing"><div class="tofu"></div></div>
+    <svg class="lens" viewBox="0 0 100 100">
+      <circle cx="40" cy="40" r="26" fill="rgba(79,209,197,0.14)" stroke="#4fd1c5" stroke-width="8"/>
+      <line x1="60" y1="60" x2="86" y2="86" stroke="#4fd1c5" stroke-width="11" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="title"><span class="brand">LocaSync</span><br>Glyph Scanner</div>
+</body></html>

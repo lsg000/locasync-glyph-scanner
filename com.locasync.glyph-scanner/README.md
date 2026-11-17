@@ -17,13 +17,12 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 
 ## Install
 
-Package Manager → **+** → **Add package from git URL…**
+- **Asset Store**: import the package. Everything goes into `Assets/LocaSync Glyph Scanner/`.
+- **Git (UPM)**: Package Manager → **+** → **Add package from git URL…**, then enter `https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner`
 
-```
-https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner
-```
+Install it one way only. Both copies use the same assembly names and GUIDs, so installing both causes conflicts.
 
-Or **Add package from disk…** and pick `com.locasync.glyph-scanner/package.json`.
+To try it without your own data, use the sample CSV: Package Manager → *Samples* (git install), or `Samples/` in the Asset Store folder.
 
 ## Use
 

@@ -1,0 +1,34 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+  body { --w: 1950px; --h: 1300px; padding: 140px 160px; display: flex; flex-direction: column; justify-content: space-between; }
+  .title { font-size: 156px; }
+  .tagline { font-size: 64px; margin-top: 44px; max-width: 1500px; line-height: 1.25; }
+  .row { position: relative; }
+  .tiles { --size: 210px; --gap: 44px; }
+  .lens { width: 330px; height: 330px; left: 1035px; top: 150px; }
+  .publisher { font-size: 40px; }
+</style></head>
+<body>
+  <!-- Cover: title, publisher and tagline are the only text. The glyph tiles are illustration. -->
+  <div>
+    <div class="title"><span class="brand">LocaSync</span><br>Glyph Scanner</div>
+    <div class="tagline">Find the characters your TextMeshPro fonts can't render, before players see □.</div>
+  </div>
+  <div class="row">
+    <div class="tiles">
+      <div class="tile ok glyph">A</div>
+      <div class="tile ok glyph">가</div>
+      <div class="tile missing"><div class="tofu"></div></div>
+      <div class="tile ok glyph">あ</div>
+      <div class="tile missing"><div class="tofu"></div></div>
+      <div class="tile ok glyph">中</div>
+      <div class="tile missing"><div class="tofu"></div></div>
+    </div>
+    <svg class="lens" viewBox="0 0 100 100">
+      <circle cx="40" cy="40" r="26" fill="rgba(79,209,197,0.10)" stroke="#4fd1c5" stroke-width="6"/>
+      <line x1="60" y1="60" x2="86" y2="86" stroke="#4fd1c5" stroke-width="9" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="publisher">LocaSync</div>
+</body></html>
