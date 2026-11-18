@@ -20,7 +20,7 @@ Images are rendered from `docs/asset-store/images-src/*.html` with `bash tools/r
 
 ## Steps only you can do (your account)
 
-1. **Publisher profile**: create it at https://publisher.unity.com and pick a publisher name. If the name isn't "LocaSync", tell Claude so the card and cover can be re-rendered.
+1. **Publisher profile**: create it at https://publisher.unity.com. Publisher name: **TinyRig**. The card, cover and `package.json` author already use it. LocaSync stays the product line name.
 2. In the publisher profile, set a **support email** and fill in `TODO: publisher support email` in `listing.md`.
 3. **Asset Store Publishing Tools**: open the [Asset Store page](https://assetstore.unity.com/packages/package/5368745), click *Add to My Assets* and then *Open in Unity*, and import it into `AssetStoreUpload` (Unity 2022.3).
    Don't move it into `Assets/LocaSync Glyph Scanner/`. The guidelines forbid an `AssetStoreTools` folder inside the package.

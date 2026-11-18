@@ -1,8 +1,11 @@
 # Asset Store listing: LocaSync Glyph Scanner
 
-Copy each section into the matching Publisher Portal field. The text is final copy and ready to paste. Before you submit, decide the publisher name and the support contact (marked `TODO`).
+Copy each section into the matching Publisher Portal field. The text is final copy and ready to paste. Before you submit, fill in the support contact (marked `TODO`).
 
 ---
+
+## Publisher
+TinyRig
 
 ## Package title
 LocaSync Glyph Scanner

@@ -7,7 +7,7 @@
   "unityRelease": "0f1",
   "license": "MIT",
   "keywords": ["localization", "textmeshpro", "tmp", "font", "glyph", "csv", "google sheets", "cjk"],
-  "author": { "name": "LocaSync", "url": "https://github.com/lsg000/locasync-glyph-scanner" },
+  "author": { "name": "TinyRig", "url": "https://github.com/lsg000/locasync-glyph-scanner" },
   "documentationUrl": "https://github.com/lsg000/locasync-glyph-scanner/blob/main/com.locasync.glyph-scanner/README.md",
   "changelogUrl": "https://github.com/lsg000/locasync-glyph-scanner/blob/main/com.locasync.glyph-scanner/CHANGELOG.md",
   "licensesUrl": "https://github.com/lsg000/locasync-glyph-scanner/blob/main/LICENSE",
