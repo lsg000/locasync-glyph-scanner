@@ -25,3 +25,6 @@
 .vscode/
 *.DS_Store
 Thumbs.db
+
+# Asset Store Publishing Tools (Unity Companion License): installed locally, never redistributed.
+/AssetStoreUpload/Packages/com.unity.asset-store-tools/

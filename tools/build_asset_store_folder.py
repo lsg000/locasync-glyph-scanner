@@ -6,7 +6,7 @@ Source:  com.locasync.glyph-scanner/   (the UPM package, the single source of tr
 Output:  AssetStoreUpload/Assets/LocaSync Glyph Scanner/
            Editor/          code and asmdefs, with the package's own .meta files (same GUIDs as the UPM package)
            Samples/         the sample CSV, from Samples~/ (folders ending in ~ are hidden from Unity)
-           Documentation/   README.md and CHANGELOG.md
+           Documentation/   PDF manual (from docs/asset-store/manual/), README.md, CHANGELOG.md
 
 Tests and package.json are left out. LICENSE.md is left out as well: the Asset Store version is distributed
 under the Asset Store EULA, while the GitHub version is MIT.
@@ -35,8 +35,16 @@ COPIES = [
     ("CHANGELOG.md", "Documentation/CHANGELOG.md"),
 ]
 
+# Files that live outside the package (rendered by tools/render_store_images.sh).
+EXTRA_COPIES = [
+    (os.path.join(ROOT, "docs", "asset-store", "manual", "LocaSync Glyph Scanner Manual.pdf"),
+     "Documentation/LocaSync Glyph Scanner Manual.pdf"),
+]
+
 FOLDER_META = "fileFormatVersion: 2\nguid: {guid}\nfolderAsset: yes\nDefaultImporter:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n"
 TEXT_META = "fileFormatVersion: 2\nguid: {guid}\nTextScriptImporter:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n"
+DEFAULT_META = "fileFormatVersion: 2\nguid: {guid}\nDefaultImporter:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n"
+TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".json", ".xml", ".html", ".yaml", ".bytes"}
 
 
 def stable_guid(relative_path):
@@ -47,7 +55,12 @@ def ensure_meta(path, relative_path):
     meta = path + ".meta"
     if os.path.exists(meta):
         return
-    template = FOLDER_META if os.path.isdir(path) else TEXT_META
+    if os.path.isdir(path):
+        template = FOLDER_META
+    elif os.path.splitext(path)[1].lower() in TEXT_EXTENSIONS:
+        template = TEXT_META
+    else:
+        template = DEFAULT_META
     with open(meta, "w", encoding="utf-8", newline="\n") as handle:
         handle.write(template.format(guid=stable_guid(relative_path)))
 
@@ -70,6 +83,13 @@ def main():
             shutil.copytree(source, dest)
         else:
             shutil.copy2(source, dest)
+
+    for source, dest_rel in EXTRA_COPIES:
+        if not os.path.isfile(source):
+            sys.exit("Missing " + source + ". Run: bash tools/render_store_images.sh")
+        dest = os.path.join(OUTPUT, dest_rel)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        shutil.copy2(source, dest)
 
     # Give every file and folder without a .meta a stable one, including the root folder itself.
     ensure_meta(OUTPUT, FOLDER_NAME)

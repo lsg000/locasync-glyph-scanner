@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LocaSync Glyph Scanner Manual</title>
+<style>
+  @page { size: A4; margin: 18mm 18mm 20mm 18mm; }
+  :root { --ink: #1c2233; --dim: #5b6478; --accent: #0f8f86; --warn: #b26a00; --rule: #dfe3ec; --code: #f3f5f9; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { font-size: 26pt; margin: 0 0 4pt; letter-spacing: -0.01em; }
+  h1 .brand { color: var(--accent); }
+  .subtitle { color: var(--dim); font-size: 12pt; margin-bottom: 18pt; }
+  h2 { font-size: 15pt; margin: 22pt 0 6pt; padding-bottom: 4pt; border-bottom: 1px solid var(--rule); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; break-after: avoid; }
+  p, li { margin: 0 0 6pt; }
+  ol, ul { padding-left: 18pt; margin: 0 0 8pt; }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; background: var(--code); padding: 0 3pt; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 4pt 0 10pt; font-size: 9.8pt; }
+  th, td { text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); padding: 5pt 6pt; }
+  th { background: #f6f7fb; }
+  figure { margin: 8pt 0 12pt; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border: 1px solid var(--rule); border-radius: 4px; }
+  figcaption { color: var(--dim); font-size: 9pt; margin-top: 4pt; }
+  .note { border-left: 3px solid var(--accent); background: #f1faf9; padding: 6pt 10pt; margin: 6pt 0 10pt; }
+  .warn { border-left-color: var(--warn); background: #fff8ec; }
+  .toc { border: 1px solid var(--rule); border-radius: 6px; padding: 10pt 14pt; margin-bottom: 8pt; }
+  .toc ol { margin: 0; }
+  .toc li { margin: 2pt 0; }
+  .meta { color: var(--dim); font-size: 9pt; }
+  .page-break { break-before: page; }
+</style>
+</head>
+<body>
+
+<h1><span class="brand">LocaSync</span> Glyph Scanner</h1>
+<div class="subtitle">User manual · version 0.1.3 · Unity 2022.3 and newer</div>
+
+<div class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li>Overview</li>
+    <li>Requirements</li>
+    <li>Installation</li>
+    <li>Quick start (step by step)</li>
+    <li>Sources: CSV, TSV, Text Asset, Google Sheets</li>
+    <li>Table format</li>
+    <li>Reading the results</li>
+    <li>Fixing missing characters in the Font Asset Creator</li>
+    <li>Options</li>
+    <li>Troubleshooting</li>
+    <li>Scripting reference</li>
+    <li>Support and version history</li>
+  </ol>
+</div>
+
+<h2>1. Overview</h2>
+<p>When a game is localized into Japanese, Chinese, Korean or other languages, some characters in the translations are often missing from the TextMeshPro font asset that renders them. Players then see an empty box (□) instead of the character.</p>
+<p>LocaSync Glyph Scanner reads your localization table and checks every character of every language column against the TMP font asset you assign to that language, including its whole fallback chain. It lists only the characters that none of those fonts contain, so you can add them to your font atlas before release.</p>
+<ul>
+  <li>Works with any localization setup that can export a CSV: Unity Localization, I2 Localization, or your own spreadsheet.</li>
+  <li>Editor-only: nothing is added to your builds.</li>
+  <li>Never modifies your font assets, Dynamic fonts included.</li>
+</ul>
+
+<h2>2. Requirements</h2>
+<ul>
+  <li>Unity 2022.3 or newer (Unity 6 supported).</li>
+  <li>TextMeshPro: the <code>com.unity.textmeshpro</code> package on Unity 2022.3, or <code>com.unity.ugui</code> 2.0+ on Unity 6. If TextMeshPro is not installed, the tool shows a notice that says what to install instead of causing compile errors.</li>
+  <li>Network access is needed only when you scan a Google Sheets or other URL source.</li>
+</ul>
+
+<h2>3. Installation</h2>
+<ol>
+  <li>Import the package from the Asset Store. All files are placed in <code>Assets/LocaSync Glyph Scanner/</code>.</li>
+  <li>Open <strong>Window › LocaSync › Glyph Scanner</strong>. If the menu explains that TextMeshPro is missing, install it from the Package Manager first.</li>
+</ol>
+<div class="note">Install the tool either from the Asset Store or from the GitHub (UPM) package, not both. The two copies share assembly names and asset GUIDs.</div>
+
+<h2>4. Quick start (step by step)</h2>
+<p>This walkthrough uses the included sample, so you can try the tool before pointing it at your own data.</p>
+<ol>
+  <li>Open <strong>Window › LocaSync › Glyph Scanner</strong>.</li>
+  <li>Click <strong>New</strong> and save a <em>Glyph Scan Profile</em> asset anywhere in your project. The profile stores the source and the font for each language, so your team can re-run the same check later.</li>
+  <li>Leave <strong>Source</strong> on <em>Text Asset</em> and drag <code>Samples/Sample CSV/sample_localization.csv</code> into <strong>CSV Asset</strong>.</li>
+  <li>Click <strong>Load Columns</strong>. A <strong>+ column</strong> button appears for each language column in the file (here: <code>+ en</code>, <code>+ ko</code>, <code>+ ja</code>, <code>+ zh-Hans</code>).</li>
+  <li>Click each button to add a row, then assign the TMP font asset that renders that language in your game. For the sample you can use <code>LiberationSans SDF</code> for every row.</li>
+  <li>Click <strong>Scan</strong>.</li>
+</ol>
+<figure>
+  <img src="../../images/scanner-setup.png" alt="">
+  <figcaption>Figure 1. A profile with the sample CSV and one column-to-font row per language.</figcaption>
+</figure>
+<p>LiberationSans has no Korean, Japanese or Chinese glyphs, so the scan reports those characters as missing. The English column reports only the emoji.</p>
+
+<h2 class="page-break">5. Sources: CSV, TSV, Text Asset, Google Sheets</h2>
+<table>
+  <tr><th>Source</th><th>Use it for</th></tr>
+  <tr><td><strong>Text Asset</strong></td><td>A <code>.csv</code> file inside your project.</td></tr>
+  <tr><td><strong>File Path</strong></td><td>Any <code>.csv</code> or <code>.tsv</code> file, absolute or relative to the project folder, for example an export from Unity Localization or I2 Localization. Use <strong>Browse</strong> to pick it.</td></tr>
+  <tr><td><strong>Sheet URL</strong></td><td>A Google Sheets link, or any URL that returns CSV/TSV. No API key or OAuth setup is needed.</td></tr>
+</table>
+<h3>5.1 Making a Google Sheet readable</h3>
+<ol>
+  <li>In Google Sheets choose <strong>Share</strong> and set <strong>General access</strong> to <em>Anyone with the link</em> (Viewer). Then paste the normal sheet link (<code>…/edit#gid=…</code>) into <strong>Sheet URL</strong>. The tab in the link (<code>gid</code>) is the one scanned.</li>
+  <li>Or use <strong>File › Share › Publish to web</strong>, choose <em>Comma-separated values (.csv)</em> and paste the published link.</li>
+</ol>
+<div class="note warn">Prefer CSV over TSV for Google Sheets. Google's TSV export replaces line breaks inside a cell with spaces, while CSV keeps them.</div>
+
+<h2>6. Table format</h2>
+<ul>
+  <li>The first non-empty row is the header row. Empty rows are ignored.</li>
+  <li>The <strong>Key Column</strong> setting names the key column. Leave it empty to use the first column.</li>
+  <li>Rows whose key is empty or starts with <code>#</code> are skipped (useful for notes and drafts).</li>
+  <li>Language columns are matched by header name, ignoring case and surrounding spaces, e.g. <code>ko</code> or <code>Korean(ko)</code>. Columns whose header starts with <code>#</code> or <code>_</code> are not offered as language columns.</li>
+  <li>Comma, tab and semicolon delimiters are detected automatically. Quoted cells may contain delimiters, quotes (<code>""</code>) and line breaks.</li>
+</ul>
+
+<h2>7. Reading the results</h2>
+<figure>
+  <img src="../../images/scanner-results.png" alt="" style="max-height: 150mm">
+  <figcaption>Figure 2. Scan results for the sample with TMP's default font.</figcaption>
+</figure>
+<p>Each language row shows:</p>
+<ul>
+  <li><strong>N missing / M unique</strong>: how many distinct characters the column uses, and how many of them no font in the chain contains.</li>
+  <li><strong>Font chain</strong>: the fonts searched, in TextMeshPro's runtime order (the font, its fallbacks depth-first, then the TMP Settings fallbacks and default font), with the number of characters each one supplied.</li>
+  <li><strong>Missing characters</strong>, sorted and de-duplicated, with <strong>Copy Characters</strong> and <strong>Copy Hex Ranges</strong> buttons.</li>
+  <li><strong>Where each character is used</strong>: each missing character, its code point and up to three keys that use it.</li>
+</ul>
+<div class="note">If the chain contains a <strong>Dynamic</strong> font asset, a note is shown. Dynamic fonts add glyphs from their source font file at runtime, so a listed character may still render if that source file contains it.</div>
+
+<h2>8. Fixing missing characters in the Font Asset Creator</h2>
+<ol>
+  <li>In the scanner, click <strong>Copy Characters</strong> for the language.</li>
+  <li>Open <strong>Window › TextMeshPro › Font Asset Creator</strong> and select the font's source file.</li>
+  <li>Set <strong>Character Set</strong> to <em>Custom Characters</em> and paste, or set it to <em>Unicode Range (Hex)</em> and paste the result of <strong>Copy Hex Ranges</strong>.</li>
+  <li>Generate the atlas and save it into the font asset (or a new fallback font asset), then scan again to confirm nothing is missing.</li>
+</ol>
+<div class="note">If the Font Asset Creator reports a character as missing from the source font file, that font cannot render it. Add a fallback font that contains the character.</div>
+
+<h2>9. Options</h2>
+<table>
+  <tr><th>Option</th><th>Effect</th></tr>
+  <tr><td>Strip Rich Text Tags</td><td>Ignores TextMeshPro tags such as <code>&lt;b&gt;</code>, <code>&lt;color=#FF0000&gt;</code>, <code>&lt;sprite=1&gt;</code> and <code>&lt;link="id"&gt;</code>. Text inside <code>&lt;noparse&gt;</code> is still checked. Text that only looks like a tag (<code>a &lt; b</code>) is checked as written.</td></tr>
+  <tr><td>Strip Placeholders</td><td>Ignores simple placeholders such as <code>{0}</code>, <code>{name}</code> and <code>{0:N2}</code>. Plural and select forms like <code>{0:plural:item|items}</code> are checked, because their words are rendered.</td></tr>
+  <tr><td>Global Fallbacks</td><td>Also searches the fallback fonts and default font set in TMP Settings, as TextMeshPro does at runtime.</td></tr>
+</table>
+
+<h2>10. Troubleshooting</h2>
+<table>
+  <tr><th>Message or symptom</th><th>What to do</th></tr>
+  <tr><td>"LocaSync Glyph Scanner needs TextMeshPro…"</td><td>Install TextMeshPro (Unity 2022.3) or Unity UI 2.0+ (Unity 6) from the Package Manager.</td></tr>
+  <tr><td>"Google Sheets returned HTTP 401/403/404…" or "Google returned a web page…"</td><td>The sheet is private, missing, or the link is incomplete. Share it as <em>Anyone with the link</em> or publish it to the web (section 5.1).</td></tr>
+  <tr><td>"Download failed… Check your internet connection"</td><td>The URL could not be reached. Check the connection, proxy and URL.</td></tr>
+  <tr><td>"Could not read the file (is it open in Excel?)"</td><td>Close the file in Excel or other programs that lock it, then scan again.</td></tr>
+  <tr><td>"Column '…' not found"</td><td>The binding's column name does not match a header. Click <strong>Load Columns</strong> to see the exact headers.</td></tr>
+  <tr><td>A character is reported missing but renders in the game</td><td>Check whether a Dynamic font in the chain adds it at runtime (section 7), or whether the text object uses a different font than the one bound in the profile.</td></tr>
+</table>
+
+<h2>11. Scripting reference</h2>
+<p>No scripting is needed to use the tool. For automation (for example a CI check), the core types are public in the <code>LocaSync.Editor.GlyphScanner</code> namespace (assembly <code>LocaSync.GlyphScanner.Editor</code>):</p>
+<table>
+  <tr><th>Type</th><th>Purpose</th></tr>
+  <tr><td><code>DelimitedTextParser</code></td><td><code>DetectDelimiter(text)</code> and <code>Parse(text, delimiter)</code> for CSV/TSV.</td></tr>
+  <tr><td><code>TextTable</code></td><td><code>FromRows(rows)</code> builds a header plus rows; <code>IndexOf(header)</code> finds a column.</td></tr>
+  <tr><td><code>GlyphCoverageScanner</code></td><td><code>Scan(entries, chain, options)</code> returns a <code>CoverageResult</code> with the missing code points and the keys that use them.</td></tr>
+  <tr><td><code>IGlyphLookup</code></td><td>One font in a chain (<code>Contains(codepoint)</code>, <code>IsDynamic</code>).</td></tr>
+  <tr><td><code>CharacterSetFormatter</code></td><td><code>ToCharacters</code> and <code>ToHexRanges</code> for the Font Asset Creator.</td></tr>
+  <tr><td><code>SheetUrlNormalizer</code></td><td>Turns Google Sheets share or publish links into direct CSV download URLs.</td></tr>
+  <tr><td><code>GlyphScanProfile</code></td><td>The ScriptableObject that stores a scan setup.</td></tr>
+</table>
+
+<h2>12. Support and version history</h2>
+<ul>
+  <li>Report issues and request features: <code>https://github.com/lsg000/locasync-glyph-scanner/issues</code></li>
+  <li>The full version history is in <code>Documentation/CHANGELOG.md</code>.</li>
+</ul>
+<p class="meta">LocaSync Glyph Scanner 0.1.3.</p>
+
+</body>
+</html>
