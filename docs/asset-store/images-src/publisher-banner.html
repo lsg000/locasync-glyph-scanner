@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+  /* Publisher profile promo banner (TinyRig). The Publisher Portal crops banners to 3:2, so this matches the
+     1950x1300 cover-image size. */
+  body { --w: 1950px; --h: 1300px; padding: 0 170px; display: flex; flex-direction: column; justify-content: center; gap: 56px; }
+  .name { font-size: 220px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .name .dot { color: var(--ok); }
+  .line { font-size: 66px; color: var(--ink-dim); font-weight: 500; max-width: 1500px; line-height: 1.25; }
+  .tiles { --size: 120px; --gap: 26px; margin-top: 30px; }
+  .tile.ok { background: color-mix(in srgb, var(--ok) 10%, var(--tile)); }
+</style></head>
+<body>
+  <div class="name">TinyRig<span class="dot">.</span></div>
+  <div class="line">Small, sharp Unity editor tools that catch problems before your players do.</div>
+  <div class="tiles">
+    <div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile ok"></div><div class="tile missing"><div class="tofu"></div></div><div class="tile ok"></div>
+  </div>
+</body></html>

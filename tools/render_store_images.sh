@@ -28,6 +28,7 @@ render cover 1950 1300
 render social 1200 630
 render shot-results 1920 1080
 render shot-setup 1920 1080
+render publisher-banner 1950 1300
 
 # Offline manual (the Asset Store asks for PDF/RTF documentation when a package contains code).
 MANUAL_SRC="$ROOT/docs/asset-store/manual-src/manual.html"
