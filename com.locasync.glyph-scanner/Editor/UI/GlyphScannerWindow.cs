@@ -20,6 +20,9 @@ namespace LocaSync.Editor.GlyphScanner
             public string Error;
             public CoverageResult Coverage;
             public string ChainSummary = string.Empty;
+
+            /// <summary>Fonts from &lt;font&gt; tags and emoji fallbacks that supplied characters. Empty when there are none.</summary>
+            public string ExtraSummary = string.Empty;
             public string MissingCharacters = string.Empty;
             public string MissingHexRanges = string.Empty;
 
@@ -134,9 +137,14 @@ namespace LocaSync.Editor.GlyphScanner
 
             EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.stripRichTextTags)));
             EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.stripPlaceholders)));
+            EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.checkUppercaseForms)),
+                new GUIContent("Check Uppercase",
+                    "Also check the uppercase form of every letter. Turn this on when text objects use the UpperCase or " +
+                    "SmallCaps font style. Case tags in the text (<allcaps>, <uppercase>, <smallcaps>) are always applied."));
             EditorGUILayout.PropertyField(_serializedProfile.FindProperty(nameof(GlyphScanProfile.includeTmpSettingsFallbacks)),
                 new GUIContent("Global Fallbacks",
-                    "Also search the fallback fonts and default font set in TMP Settings, as TMP does at runtime."));
+                    "Also search what TMP Settings adds for every text object, as TMP does at runtime: the fallback fonts, " +
+                    "the default font, the default sprite asset and (Unity 6) the emoji fallbacks."));
 
             _serializedProfile.ApplyModifiedProperties();
         }
@@ -369,34 +377,35 @@ namespace LocaSync.Editor.GlyphScanner
                 entries.Add(new ScanEntry(key, row[columnIndex]));
             }
 
-            List<TMP_FontAsset> chain = TmpFontChain.Resolve(binding.font, _profile.includeTmpSettingsFallbacks);
-            CoverageResult coverage = GlyphCoverageScanner.Scan(entries, TmpFontChain.ToLookups(chain), options);
+            FontChainSet chains = TmpFontChain.Build(binding.font, _profile.includeTmpSettingsFallbacks);
+            CoverageResult coverage = GlyphCoverageScanner.Scan(entries, chains, options);
             report.Coverage = coverage;
             report.MissingCharacters = CharacterSetFormatter.ToCharacters(coverage.Missing);
             report.MissingHexRanges = CharacterSetFormatter.ToHexRanges(coverage.Missing);
             report.RuntimeCharacters = CharacterSetFormatter.ToCharacters(coverage.AddedAtRuntime);
-            DescribeChain(report, chain);
+            DescribeChain(report, chains.Main);
             return report;
         }
 
-        /// <summary>Builds the "Font chain" line and the notes about characters a Dynamic font adds at runtime.</summary>
-        static void DescribeChain(ColumnReport report, List<TMP_FontAsset> chain)
+        /// <summary>
+        /// Builds the "Font chain" line, the "Also used" line (fonts from &lt;font&gt; tags and emoji fallbacks) and the
+        /// notes about characters a Dynamic font adds at runtime.
+        /// </summary>
+        static void DescribeChain(ColumnReport report, IReadOnlyList<IGlyphLookup> chain)
         {
             CoverageResult coverage = report.Coverage;
             var parts = new List<string>();
             for (int i = 0; i < chain.Count; i++)
             {
-                TMP_FontAsset font = chain[i];
-                int covered = coverage.CoveredCountByChainIndex[i];
+                string name = chain[i].Name;
                 int atRuntime = coverage.AddedAtRuntimeCountByChainIndex[i];
-                parts.Add(atRuntime == 0
-                    ? $"{font.name} ({covered})"
-                    : $"{font.name} ({covered}, {atRuntime} added at runtime)");
+                parts.Add(Describe(name, coverage.CoveredCountByChainIndex[i], atRuntime));
                 if (atRuntime == 0) continue;
 
-                string note = $"{atRuntime} character(s) are not in an atlas yet. '{font.name}' is a Dynamic font asset " +
+                string note = $"{atRuntime} character(s) are not in an atlas yet. '{name}' is a Dynamic font asset " +
                               "and adds them from its source font file at runtime, so they will render.";
-                if (!font.isMultiAtlasTexturesEnabled)
+                TMP_FontAsset font = (chain[i] as TmpGlyphLookup)?.Font;
+                if (font != null && !font.isMultiAtlasTexturesEnabled)
                 {
                     note += $" Its atlas is a single {font.atlasWidth}×{font.atlasHeight} texture: once that is full, " +
                             "further characters will not render. Turn on Multi Atlas Textures in the font asset if " +
@@ -405,6 +414,19 @@ namespace LocaSync.Editor.GlyphScanner
                 report.RuntimeNotes.Add(note);
             }
             report.ChainSummary = string.Join("  →  ", parts);
+
+            var extras = new List<string>();
+            foreach (ExtraSource source in coverage.ExtraSources)
+            {
+                string kind = source.Kind == ExtraSourceKind.EmojiFallback ? "emoji fallback" : "<font> tag";
+                extras.Add(Describe(source.Name, source.CoveredCount, source.AddedAtRuntimeCount) + " " + kind);
+            }
+            report.ExtraSummary = string.Join(",  ", extras);
+        }
+
+        static string Describe(string name, int covered, int atRuntime)
+        {
+            return atRuntime == 0 ? $"{name} ({covered})" : $"{name} ({covered}, {atRuntime} added at runtime)";
         }
 
         // ---------------------------------------------------------------- results
@@ -450,6 +472,10 @@ namespace LocaSync.Editor.GlyphScanner
             CoverageResult coverage = report.Coverage;
 
             EditorGUILayout.LabelField("Font chain", report.ChainSummary, EditorStyles.wordWrappedMiniLabel);
+            if (report.ExtraSummary.Length > 0)
+            {
+                EditorGUILayout.LabelField("Also used", report.ExtraSummary, EditorStyles.wordWrappedMiniLabel);
+            }
             EditorGUILayout.LabelField("Entries scanned", coverage.EntryCount.ToString());
 
             if (report.RuntimeNotes.Count > 0)
@@ -462,6 +488,9 @@ namespace LocaSync.Editor.GlyphScanner
                     Copy(report.RuntimeCharacters, "Runtime-added characters copied");
                 }
             }
+
+            // Problems in the text itself, shown even when nothing is missing.
+            foreach (string warning in coverage.Warnings) EditorGUILayout.HelpBox(warning, MessageType.Warning);
 
             if (coverage.Missing.Count == 0)
             {

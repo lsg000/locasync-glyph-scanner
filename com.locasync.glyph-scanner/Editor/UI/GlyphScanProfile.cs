@@ -43,13 +43,17 @@ namespace LocaSync.Editor.GlyphScanner
         [Tooltip("Ignore simple placeholders such as {0}, {name} or {0:N2}.")]
         public bool stripPlaceholders = true;
 
-        [Tooltip("Also search the fallback fonts and default font set in TMP Settings, as TMP does at runtime.")]
+        [Tooltip("Also check the uppercase form of every letter. Turn this on when text objects use the UpperCase or SmallCaps font style.")]
+        public bool checkUppercaseForms;
+
+        [Tooltip("Also search what TMP Settings adds for every text object, as TMP does at runtime: the fallback fonts, the default font, the default sprite asset and (Unity 6) the emoji fallbacks.")]
         public bool includeTmpSettingsFallbacks = true;
 
         public ScanOptions ToScanOptions() => new ScanOptions
         {
             StripRichTextTags = stripRichTextTags,
             StripPlaceholders = stripPlaceholders,
+            IncludeUppercaseForms = checkUppercaseForms,
         };
     }
 

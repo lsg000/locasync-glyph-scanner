@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.6] - 2026-11-18
+
+### Fixed
+- Case tags are applied. Text inside `<allcaps>`, `<uppercase>` and `<smallcaps>` is checked in upper case, and text inside `<lowercase>` in lower case, as TextMeshPro renders it. Before, a font that had `é` but not `É` passed the scan.
+- Text inside `<font="name">` is checked against that font asset and its fallbacks first, and then against the column's font. Before, it was checked against the column's font only and could be reported as missing. The font is looked up where TextMeshPro loads it from (TMP Settings > Default Font Asset path). A name that matches no font asset is reported.
+- Characters supplied by sprite assets are no longer reported as missing: the default sprite asset from TMP Settings, and on Unity 6 the emoji fallback assets. Emoji fallbacks are searched first and only for emoji, with TextMeshPro's own rules for the U+FE0F and U+FE0E variation selectors.
+
+### Added
+- **Check Uppercase** option: also checks the uppercase form of every letter, for text objects that use the UpperCase or SmallCaps font style (a component setting the scanner cannot see).
+- The report has an **Also used** line for fonts from `<font>` tags and emoji fallbacks that supplied characters.
+- Scripting API: `FontChainSet` and `GlyphCoverageScanner.Scan(entries, FontChainSet, options)`, `RichTextStripper.Parse`, `TextSanitizer.PrepareRuns`, `CodepointCollector.EnumerateStyled`, `CoverageResult.ExtraSources`, `CoverageResult.Warnings` and `ScanOptions.IncludeUppercaseForms`. The existing `Scan(entries, chain, options)` still works.
+
+### Verified
+- Unity 2022.3.62f3 with TextMeshPro 3.0.9 and Unity 6000.6.9f1 with uGUI 2.6.0: all 123 EditMode tests pass. They include scans against TMP's default sprite asset and a `<font>` tag that names a real font asset.
+
 ## [0.1.5] - 2026-11-18
 
 ### Changed

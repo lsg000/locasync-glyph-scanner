@@ -1,4 +1,7 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -26,7 +29,7 @@ namespace LocaSync.Editor.GlyphScanner
         readonly FontFaceLoader _faces;
         readonly Font _sourceFont;
 
-        /// <param name="faces">Shared by the lookups of one chain, so they agree on which font face is loaded.</param>
+        /// <param name="faces">Shared by the lookups of one scan, so they agree on which font face is loaded.</param>
         public TmpGlyphLookup(TMP_FontAsset font, FontFaceLoader faces = null)
         {
             _font = font;
@@ -55,6 +58,8 @@ namespace LocaSync.Editor.GlyphScanner
                     break;
             }
         }
+
+        public TMP_FontAsset Font => _font;
 
         public string Name => _font != null ? _font.name : "<missing font>";
 
@@ -101,6 +106,32 @@ namespace LocaSync.Editor.GlyphScanner
     }
 
     /// <summary>
+    /// A TMP sprite asset. TextMeshPro falls back to sprites that have a Unicode value assigned, which is how the
+    /// default sprite asset and emoji sprite assets supply emoji.
+    /// </summary>
+    internal sealed class TmpSpriteLookup : IGlyphLookup
+    {
+        readonly TMP_SpriteAsset _asset;
+
+        public TmpSpriteLookup(TMP_SpriteAsset asset)
+        {
+            _asset = asset;
+        }
+
+        public string Name => _asset.name + " (sprites)";
+
+        public string Caveat => null;
+
+        public bool Contains(uint codepoint)
+        {
+            Dictionary<uint, TMP_SpriteCharacter> table = _asset.spriteCharacterLookupTable;
+            return table != null && table.ContainsKey(codepoint);
+        }
+
+        public bool CanAddAtRuntime(uint codepoint) => false;
+    }
+
+    /// <summary>
     /// FontEngine works on one "current" font face. This remembers which face was loaded last, so a scan does not
     /// reload the face for every character. Create one per scan and use its lookups right away: TextMeshPro loads
     /// its own face whenever it needs one (which also makes changing the current face here safe), so an old loader
@@ -123,21 +154,125 @@ namespace LocaSync.Editor.GlyphScanner
         }
     }
 
-    /// <summary>Builds the fallback chain TMP searches for a font asset.</summary>
+    /// <summary>
+    /// Emoji fallbacks exist only in newer TextMeshPro versions (com.unity.ugui 2.x), and the tests TMP uses to decide
+    /// what counts as an emoji are internal. Both are reached by reflection so the same code compiles everywhere.
+    /// </summary>
+    internal static class TmpEmojiSupport
+    {
+        const uint FirstPictograph = 0x1F000, LastPictograph = 0x1FAFF;
+
+        static readonly PropertyInfo FallbackAssetsProperty =
+            typeof(TMP_Settings).GetProperty("emojiFallbackTextAssets", BindingFlags.Public | BindingFlags.Static);
+
+        static readonly Func<uint, bool> PresentationTest = Bind("IsEmojiPresentationForm");
+        static readonly Func<uint, bool> EmojiTest = Bind("IsEmoji");
+
+        /// <summary>The emoji fallback assets from TMP Settings, or an empty list on TMP versions without them.</summary>
+        public static List<TMP_Asset> FallbackAssets()
+        {
+            var assets = new List<TMP_Asset>();
+            if (FallbackAssetsProperty == null) return assets;
+
+            if (FallbackAssetsProperty.GetValue(null) is IEnumerable values)
+            {
+                foreach (object value in values)
+                {
+                    // UnityEngine.Object's == so destroyed / missing references are skipped.
+                    if (value is TMP_Asset asset && asset != null) assets.Add(asset);
+                }
+            }
+            return assets;
+        }
+
+        /// <summary>Emoji by default. Without TMP's own table, the pictograph blocks are a close approximation.</summary>
+        public static bool IsEmojiPresentation(uint codepoint)
+        {
+            return PresentationTest != null
+                ? PresentationTest(codepoint)
+                : codepoint >= FirstPictograph && codepoint <= LastPictograph;
+        }
+
+        /// <summary>Emoji when followed by the emoji variation selector.</summary>
+        public static bool IsEmoji(uint codepoint)
+        {
+            return EmojiTest == null || EmojiTest(codepoint);
+        }
+
+        static Func<uint, bool> Bind(string methodName)
+        {
+            MethodInfo method = typeof(TMP_TextParsingUtilities).GetMethod(methodName,
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(uint) }, null);
+            if (method == null || method.ReturnType != typeof(bool)) return null;
+            return (Func<uint, bool>)Delegate.CreateDelegate(typeof(Func<uint, bool>), method);
+        }
+    }
+
+    /// <summary>Builds what TextMeshPro searches for a character of a text object that uses a given font asset.</summary>
     internal static class TmpFontChain
     {
+        const string DefaultFontAssetPath = "Fonts & Materials/";
+
+        /// <summary>The font, its fallbacks and (optionally) the TMP Settings fallbacks and default font.</summary>
         public static List<TMP_FontAsset> Resolve(TMP_FontAsset primary, bool includeGlobalFallbacks)
         {
             if (primary == null) return new List<TMP_FontAsset>();
             return FontChainResolver.Resolve(primary, GetFallbacks, includeGlobalFallbacks ? GetGlobalFallbacks() : null);
         }
 
-        public static List<IGlyphLookup> ToLookups(IEnumerable<TMP_FontAsset> fonts)
+        public static List<IGlyphLookup> ToLookups(IEnumerable<TMP_FontAsset> fonts, FontFaceLoader faces = null)
         {
-            var faces = new FontFaceLoader();
+            faces = faces ?? new FontFaceLoader();
             var lookups = new List<IGlyphLookup>();
             foreach (TMP_FontAsset font in fonts) lookups.Add(new TmpGlyphLookup(font, faces));
             return lookups;
+        }
+
+        /// <summary>
+        /// Everything TMP searches, in its order: emoji fallbacks first (emoji only), fonts named by &lt;font&gt; tags,
+        /// then the font chain, and last the default sprite asset. The TMP Settings parts are left out when
+        /// <paramref name="includeGlobalFallbacks"/> is false.
+        /// </summary>
+        public static FontChainSet Build(TMP_FontAsset primary, bool includeGlobalFallbacks)
+        {
+            var faces = new FontFaceLoader();
+            List<IGlyphLookup> main = ToLookups(Resolve(primary, includeGlobalFallbacks), faces);
+            var set = new FontChainSet
+            {
+                Main = main,
+                FontTagResolver = name => ResolveFontTag(name, faces),
+            };
+            if (!includeGlobalFallbacks || TMP_Settings.instance == null) return set;
+
+            AddSprites(main, TMP_Settings.defaultSpriteAsset);
+
+            var emoji = new List<IGlyphLookup>();
+            foreach (TMP_Asset asset in TmpEmojiSupport.FallbackAssets())
+            {
+                if (asset is TMP_FontAsset font) emoji.AddRange(ToLookups(Resolve(font, false), faces));
+                else if (asset is TMP_SpriteAsset sprites) AddSprites(emoji, sprites);
+            }
+            if (emoji.Count > 0)
+            {
+                set.EmojiFallbacks = emoji;
+                set.IsEmojiPresentation = TmpEmojiSupport.IsEmojiPresentation;
+                set.IsEmoji = TmpEmojiSupport.IsEmoji;
+            }
+            return set;
+        }
+
+        // TMP loads the font of a <font="name"> tag from a Resources folder: TMP Settings > Default Font Asset path.
+        static IReadOnlyList<IGlyphLookup> ResolveFontTag(string name, FontFaceLoader faces)
+        {
+            string folder = TMP_Settings.instance != null ? TMP_Settings.defaultFontAssetPath : DefaultFontAssetPath;
+            TMP_FontAsset font = Resources.Load<TMP_FontAsset>(folder + name);
+            return font == null ? null : ToLookups(Resolve(font, false), faces);
+        }
+
+        static void AddSprites(List<IGlyphLookup> lookups, TMP_SpriteAsset asset)
+        {
+            if (asset == null) return;
+            foreach (TMP_SpriteAsset sprites in FontChainResolver.Resolve(asset, GetSpriteFallbacks)) lookups.Add(new TmpSpriteLookup(sprites));
         }
 
         // Filter with UnityEngine.Object's == so destroyed / missing references are skipped.
@@ -146,6 +281,16 @@ namespace LocaSync.Editor.GlyphScanner
             List<TMP_FontAsset> table = font.fallbackFontAssetTable;
             if (table == null) yield break;
             foreach (TMP_FontAsset fallback in table)
+            {
+                if (fallback != null) yield return fallback;
+            }
+        }
+
+        static IEnumerable<TMP_SpriteAsset> GetSpriteFallbacks(TMP_SpriteAsset asset)
+        {
+            List<TMP_SpriteAsset> fallbacks = asset.fallbackSpriteAssets;
+            if (fallbacks == null) yield break;
+            foreach (TMP_SpriteAsset fallback in fallbacks)
             {
                 if (fallback != null) yield return fallback;
             }

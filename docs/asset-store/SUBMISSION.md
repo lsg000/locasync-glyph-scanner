@@ -22,6 +22,8 @@ Images are rendered from `docs/asset-store/images-src/*.html` with `bash tools/r
 
 Done: publisher profile (TinyRig), Publishing Tools installed, draft created and filled in, Validator run, package uploaded from Unity 2022.3.62f3. Left: steps 7 (Preview and Submit) and the support email below. After a code change, rebuild the store folder, upload again with the Uploader (step 6) and update the version and release notes in the draft.
 
+**2026-11-18: version 0.1.5 was submitted and is in review.** Version 0.1.6 (case tags, font tags, sprite assets and emoji fallbacks) is on GitHub only. After 0.1.5 is approved, rebuild the store folder, run the Validator, upload 0.1.6 as an update and set the version and release notes in the portal.
+
 ## Steps only you can do (your account)
 
 1. **Publisher profile**: create it at https://publisher.unity.com. Publisher name: **TinyRig**. The card, cover and `package.json` author already use it. LocaSync stays the product line name.

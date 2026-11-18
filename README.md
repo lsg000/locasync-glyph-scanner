@@ -7,8 +7,8 @@ Find the characters your translations use that your TextMeshPro fonts can't rend
 LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet without an API key). For each language column it checks every character against the TMP font asset you assign to that language and its whole fallback chain. It then lists only the missing characters, de-duplicated and sorted, ready to paste into the TMP Font Asset Creator.
 
 - Works with any table you can export as CSV: Unity Localization, I2 Localization, or your own sheet.
-- Ignores TMP rich text tags and simple placeholders (`{0}`, `{name}`).
-- Follows the fallback chain the way TMP does at runtime, including the TMP Settings fallbacks and the characters Dynamic fonts add from their source font file.
+- Ignores TMP rich text tags and simple placeholders (`{0}`, `{name}`), and applies the tags that change the glyphs: case tags and `<font>`.
+- Follows the fallback chain the way TMP does at runtime, including the TMP Settings fallbacks, sprite assets, emoji fallbacks (Unity 6) and the characters Dynamic fonts add from their source font file.
 - Shows which keys use each missing character, so you know what to send back to translation.
 - Handles emoji and other characters outside the Basic Multilingual Plane.
 - Editor-only. Adds nothing to your builds.
@@ -18,7 +18,7 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 Unity 2022.3+ or Unity 6, with TextMeshPro. Package Manager → **+** → **Add package from git URL…**
 
 ```
-https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner#v0.1.5
+https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner#v0.1.6
 ```
 
 ## Quick start

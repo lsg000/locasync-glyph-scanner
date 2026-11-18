@@ -34,7 +34,7 @@
 <body>
 
 <h1><span class="brand">LocaSync</span> Glyph Scanner</h1>
-<div class="subtitle">User manual · version 0.1.5 · Unity 2022.3 and newer · by TinyRig</div>
+<div class="subtitle">User manual · version 0.1.6 · Unity 2022.3 and newer · by TinyRig</div>
 
 <div class="toc">
   <strong>Contents</strong>
@@ -135,6 +135,12 @@
 <div class="note warn">A Dynamic font with a single atlas texture stops adding characters once that texture is full. If you rely on a Dynamic font for many characters, turn on <strong>Multi Atlas Textures</strong> in the font asset. The scanner reminds you when it is off.</div>
 <div class="note"><strong>Dynamic OS</strong> font assets take glyphs from fonts installed on the player's device, which cannot be checked in the editor. For those, and for a Dynamic font whose source font file is missing, only the characters already in the atlas are counted and a warning names the font.</div>
 
+<h3>7.2 Sprite assets, emoji fallbacks and font tags</h3>
+<p>With <strong>Global Fallbacks</strong> on, the scanner also searches the <strong>default sprite asset</strong> from TMP Settings (sprites that have a Unicode value, usually emoji) and, on Unity 6, the <strong>emoji fallback</strong> assets. As in TextMeshPro, emoji fallbacks are searched first and only for emoji: characters that are emoji by default, and other emoji characters when they are followed by the emoji variation selector (U+FE0F).</p>
+<p>Text inside a <code>&lt;font="name"&gt;</code> tag is checked against that font asset and its fallbacks first, then against the column's font. TextMeshPro loads such fonts from a <code>Resources</code> folder (TMP Settings › <em>Default Font Asset</em> path, <code>Fonts &amp; Materials/</code> by default), and the scanner looks in the same place. If a name matches no font asset, a warning says so and the text is checked against the column's font.</p>
+<p>Fonts from font tags and emoji fallbacks that supplied characters are listed on an <strong>Also used</strong> line under the font chain.</p>
+<div class="note">The scanner cannot see settings of individual text objects: a sprite asset assigned on the object, the UpperCase or SmallCaps font style (use <strong>Check Uppercase</strong>, section 9), fonts supplied from code, or text added by <code>&lt;style&gt;</code> tags.</div>
+
 <h2>8. Fixing missing characters in the Font Asset Creator</h2>
 <ol>
   <li>In the scanner, click <strong>Copy Characters</strong> for the language.</li>
@@ -147,9 +153,10 @@
 <h2>9. Options</h2>
 <table>
   <tr><th>Option</th><th>Effect</th></tr>
-  <tr><td>Strip Rich Text Tags</td><td>Ignores TextMeshPro tags such as <code>&lt;b&gt;</code>, <code>&lt;color=#FF0000&gt;</code>, <code>&lt;sprite=1&gt;</code> and <code>&lt;link="id"&gt;</code>. Text inside <code>&lt;noparse&gt;</code> is still checked. Text that only looks like a tag (<code>a &lt; b</code>) is checked as written.</td></tr>
+  <tr><td>Strip Rich Text Tags</td><td>Ignores TextMeshPro tags such as <code>&lt;b&gt;</code>, <code>&lt;color=#FF0000&gt;</code>, <code>&lt;sprite=1&gt;</code> and <code>&lt;link="id"&gt;</code>. Text inside <code>&lt;noparse&gt;</code> is still checked. Text that only looks like a tag (<code>a &lt; b</code>) is checked as written. Tags that change the glyphs are applied: <code>&lt;allcaps&gt;</code>, <code>&lt;uppercase&gt;</code>, <code>&lt;lowercase&gt;</code>, <code>&lt;smallcaps&gt;</code> and <code>&lt;font&gt;</code> (section 7.2).</td></tr>
   <tr><td>Strip Placeholders</td><td>Ignores simple placeholders such as <code>{0}</code>, <code>{name}</code> and <code>{0:N2}</code>. Plural and select forms like <code>{0:plural:item|items}</code> are checked, because their words are rendered.</td></tr>
-  <tr><td>Global Fallbacks</td><td>Also searches the fallback fonts and default font set in TMP Settings, as TextMeshPro does at runtime.</td></tr>
+  <tr><td>Check Uppercase</td><td>Also checks the uppercase form of every letter. Turn it on when text objects use the UpperCase or SmallCaps font style. Off by default.</td></tr>
+  <tr><td>Global Fallbacks</td><td>Also searches what TMP Settings adds for every text object, as TextMeshPro does at runtime: the fallback fonts, the default font, the default sprite asset and (Unity 6) the emoji fallbacks.</td></tr>
 </table>
 
 <h2>10. Troubleshooting</h2>
@@ -171,7 +178,7 @@
   <tr><th>Type</th><th>Purpose</th></tr>
   <tr><td><code>DelimitedTextParser</code></td><td><code>DetectDelimiter(text)</code> and <code>Parse(text, delimiter)</code> for CSV/TSV.</td></tr>
   <tr><td><code>TextTable</code></td><td><code>FromRows(rows)</code> builds a header plus rows; <code>IndexOf(header)</code> finds a column.</td></tr>
-  <tr><td><code>GlyphCoverageScanner</code></td><td><code>Scan(entries, chain, options)</code> returns a <code>CoverageResult</code> with the missing code points, the keys that use them, and the code points Dynamic fonts add at runtime.</td></tr>
+  <tr><td><code>GlyphCoverageScanner</code></td><td><code>Scan(entries, chain, options)</code>, or <code>Scan(entries, FontChainSet, options)</code> to include font-tag fonts and emoji fallbacks, returns a <code>CoverageResult</code> with the missing code points, the keys that use them, and the code points Dynamic fonts add at runtime.</td></tr>
   <tr><td><code>IGlyphLookup</code></td><td>One font in a chain: <code>Contains(codepoint)</code> (in the atlas), <code>CanAddAtRuntime(codepoint)</code> (a Dynamic font's source file has it) and <code>Caveat</code>.</td></tr>
   <tr><td><code>CharacterSetFormatter</code></td><td><code>ToCharacters</code> and <code>ToHexRanges</code> for the Font Asset Creator.</td></tr>
   <tr><td><code>SheetUrlNormalizer</code></td><td>Turns Google Sheets share or publish links into direct CSV download URLs.</td></tr>
@@ -183,7 +190,7 @@
   <li>Report issues and request features: <code>https://github.com/lsg000/locasync-glyph-scanner/issues</code></li>
   <li>The full version history is in <code>Documentation/CHANGELOG.md</code>.</li>
 </ul>
-<p class="meta">LocaSync Glyph Scanner 0.1.5.</p>
+<p class="meta">LocaSync Glyph Scanner 0.1.6.</p>
 
 </body>
 </html>

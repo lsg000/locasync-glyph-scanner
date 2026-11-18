@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using TMPro;
+using UnityEngine;
 
 namespace LocaSync.Editor.GlyphScanner.Tests
 {
@@ -97,6 +98,56 @@ namespace LocaSync.Editor.GlyphScanner.Tests
             Assert.AreEqual(charactersBefore, dynamicFont.characterTable.Count);
             Assert.AreEqual(glyphsBefore, dynamicFont.glyphTable.Count);
             Assert.IsFalse(dynamicFont.characterLookupTable.ContainsKey(Cyrillic));
+        }
+
+        [Test]
+        public void Default_sprite_asset_supplies_characters_only_with_global_fallbacks()
+        {
+            TMP_FontAsset font = DefaultFontOrIgnore();
+            TMP_SpriteAsset sprites = TMP_Settings.defaultSpriteAsset;
+            if (sprites == null) Assert.Ignore("No default sprite asset in TMP Settings.");
+
+            // A character only the sprite asset has: with TMP Essential Resources that is an emoji such as U+1F60A.
+            List<IGlyphLookup> fonts = TmpFontChain.ToLookups(TmpFontChain.Resolve(font, includeGlobalFallbacks: true));
+            uint spriteOnly = sprites.spriteCharacterTable
+                .Select(c => c.unicode)
+                .FirstOrDefault(u => u > 0xFF && u != 0xFFFE && !CodepointCollector.IsIgnored(u) &&
+                                     !fonts.Any(f => f.Contains(u) || f.CanAddAtRuntime(u)));
+            if (spriteOnly == 0) Assert.Ignore("The default sprite asset has no character that the fonts lack.");
+            var entry = new[] { new ScanEntry("k", char.ConvertFromUtf32((int)spriteOnly)) };
+
+            CoverageResult withGlobals = GlyphCoverageScanner.Scan(entry, TmpFontChain.Build(font, includeGlobalFallbacks: true));
+            CoverageResult withoutGlobals = GlyphCoverageScanner.Scan(entry, TmpFontChain.Build(font, includeGlobalFallbacks: false));
+
+            CollectionAssert.IsEmpty(withGlobals.Missing);
+            CollectionAssert.AreEqual(new[] { spriteOnly }, withoutGlobals.Missing);
+        }
+
+        [Test]
+        public void Font_tag_names_are_looked_up_where_tmp_loads_them_from()
+        {
+            TMP_FontAsset font = DefaultFontOrIgnore();
+            FontChainSet chains = TmpFontChain.Build(font, includeGlobalFallbacks: false);
+
+            Assert.IsNull(chains.FontTagResolver("No Such Font Asset 12345"));
+
+            // TMP loads tagged fonts from Resources/<Default Font Asset path>, which is where TMP's default font lives.
+            if (Resources.Load<TMP_FontAsset>(TMP_Settings.defaultFontAssetPath + font.name) != font)
+            {
+                Assert.Ignore("The default font asset is not in the Default Font Asset path.");
+            }
+            IReadOnlyList<IGlyphLookup> tagged = chains.FontTagResolver(font.name);
+            Assert.IsNotNull(tagged);
+            Assert.AreEqual(font.name, tagged[0].Name);
+        }
+
+        [Test]
+        public void Emoji_tests_recognise_emoji_and_reject_letters()
+        {
+            Assert.IsTrue(TmpEmojiSupport.IsEmojiPresentation(0x1F389)); // party popper: an emoji by default
+            Assert.IsFalse(TmpEmojiSupport.IsEmojiPresentation('A'));
+            Assert.IsTrue(TmpEmojiSupport.IsEmoji(0x2764));              // heavy black heart: an emoji with U+FE0F
+            Assert.IsNotNull(TmpEmojiSupport.FallbackAssets());
         }
     }
 }

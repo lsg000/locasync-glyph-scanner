@@ -6,7 +6,8 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 
 - Works with any table you can export as CSV: Unity Localization, I2 Localization, or your own sheet.
 - Ignores TMP rich text tags (`<b>`, `<color=#FF0000>`, `<sprite=1>` …) and simple placeholders (`{0}`, `{name}`, `{0:N2}`). Keeps `<noparse>` content.
-- Follows the fallback chain the way TMP does at runtime: the font, its fallbacks depth-first, then the TMP Settings fallbacks and default font.
+- Applies the tags that change which glyphs are needed: `<allcaps>`, `<uppercase>`, `<lowercase>`, `<smallcaps>` and `<font="name">`.
+- Follows the fallback chain the way TMP does at runtime: the font, its fallbacks depth-first, then the TMP Settings fallbacks, default font and default sprite asset. On Unity 6 the emoji fallbacks are searched first for emoji.
 - Understands Dynamic font assets: characters a Dynamic font adds from its source font file at runtime are not reported as missing.
 - Handles emoji and other characters outside the Basic Multilingual Plane as single characters.
 - Editor-only. Adds nothing to your builds.
@@ -43,6 +44,9 @@ The first row must be a header row. Rows with an empty key, or a key starting wi
 - **Dynamic fonts**: a Dynamic font asset adds glyphs from its source font file at runtime, so the scanner checks that file too. Characters it can supply are not reported as missing, and the report shows how many each Dynamic font adds at runtime. A Dynamic font with a single atlas texture stops adding characters once the texture is full, so turn on *Multi Atlas Textures* if you rely on it for many characters.
 - **Dynamic OS fonts** take glyphs from fonts installed on the player's device. That cannot be checked in the editor, so only the characters already in the atlas are counted, and the scanner warns you when this applies.
 - **Encoding**: files must be UTF-8, or UTF-16 with a byte order mark. In Excel, save as *CSV UTF-8*. A file in a legacy encoding (CP949, Shift-JIS …) is reported instead of being scanned as garbled text.
+- **Uppercase font styles**: case tags in the text are applied, but the scanner cannot see a text object's own font style. If objects use the UpperCase or SmallCaps style, turn on **Check Uppercase** so both forms of every letter are checked.
+- **`<font="name">` tags**: the text inside is checked against that font asset first. TextMeshPro loads such fonts from a `Resources` folder (TMP Settings > *Default Font Asset* path, `Fonts & Materials/` by default); the scanner looks in the same place and tells you when a name matches nothing.
+- **Not visible to the scanner**: a sprite asset assigned on an individual text object, fonts supplied from code (`OnFontAssetRequest`), and text added by `<style>` tags. Characters that only those can render are reported as missing.
 - **Plural / select forms** such as `{0:plural:item|items}` are scanned as written, because their words are rendered.
 - **Google Sheets: prefer CSV.** Share links are fetched as CSV automatically. If you publish to the web, choose CSV rather than TSV: Google's TSV export turns line breaks inside a cell into spaces, while CSV keeps them.
 - The scanner reads the font asset's character table and, for Dynamic fonts, the source font file. It does not call `HasCharacters` with `tryAddCharacter`, so scanning never changes your font assets.
