@@ -22,16 +22,15 @@ namespace LocaSync.Editor.GlyphScanner
         // TMP gives these characters a stand-in glyph when the source font file has none of its own.
         const uint NoBreakSpace = 0xA0, Space = 0x20, SoftHyphen = 0xAD, NonBreakingHyphen = 0x2011, HyphenMinus = 0x2D;
 
-        // FontEngine works on one "current" font face. Remember which one we loaded so a scan does not reload the
-        // face for every character. TMP loads its own face before each use, so changing the current face is safe.
-        static Font s_loadedFace;
-
         readonly TMP_FontAsset _font;
+        readonly FontFaceLoader _faces;
         readonly Font _sourceFont;
 
-        public TmpGlyphLookup(TMP_FontAsset font)
+        /// <param name="faces">Shared by the lookups of one chain, so they agree on which font face is loaded.</param>
+        public TmpGlyphLookup(TMP_FontAsset font, FontFaceLoader faces = null)
         {
             _font = font;
+            _faces = faces ?? new FontFaceLoader();
             if (font == null) return;
 
             switch (font.atlasPopulationMode)
@@ -41,7 +40,7 @@ namespace LocaSync.Editor.GlyphScanner
 
                 case AtlasPopulationMode.Dynamic:
                     _sourceFont = FindSourceFont(font);
-                    if (_sourceFont == null || !LoadFace(_sourceFont))
+                    if (_sourceFont == null || !_faces.Load(_sourceFont))
                     {
                         _sourceFont = null;
                         Caveat = "'" + font.name + "' is a Dynamic font asset, but its source font file could not be read, " +
@@ -70,7 +69,7 @@ namespace LocaSync.Editor.GlyphScanner
 
         public bool CanAddAtRuntime(uint codepoint)
         {
-            if (_sourceFont == null || !LoadFace(_sourceFont)) return false;
+            if (_sourceFont == null || !_faces.Load(_sourceFont)) return false;
             if (HasGlyph(codepoint)) return true;
 
             switch (codepoint)
@@ -85,25 +84,7 @@ namespace LocaSync.Editor.GlyphScanner
             }
         }
 
-        /// <summary>Forget the cached font face. Call before a scan, because TMP may have loaded another face since.</summary>
-        public static void ResetFaceCache()
-        {
-            s_loadedFace = null;
-        }
-
         static bool HasGlyph(uint codepoint) => FontEngine.TryGetGlyphIndex(codepoint, out uint glyphIndex) && glyphIndex != 0;
-
-        static bool LoadFace(Font font)
-        {
-            if (ReferenceEquals(s_loadedFace, font)) return true;
-            if (FontEngine.LoadFontFace(font) != FontEngineError.Success)
-            {
-                s_loadedFace = null;
-                return false;
-            }
-            s_loadedFace = font;
-            return true;
-        }
 
         // A Dynamic font asset normally references its source font directly. Some assets only keep the GUID of the
         // source file (TMP restores the reference from it in the editor), so fall back to that.
@@ -119,6 +100,29 @@ namespace LocaSync.Editor.GlyphScanner
         }
     }
 
+    /// <summary>
+    /// FontEngine works on one "current" font face. This remembers which face was loaded last, so a scan does not
+    /// reload the face for every character. Create one per scan and use its lookups right away: TextMeshPro loads
+    /// its own face whenever it needs one (which also makes changing the current face here safe), so an old loader
+    /// no longer knows what is current.
+    /// </summary>
+    internal sealed class FontFaceLoader
+    {
+        Font _loaded;
+
+        public bool Load(Font font)
+        {
+            if (ReferenceEquals(_loaded, font)) return true;
+            if (FontEngine.LoadFontFace(font) != FontEngineError.Success)
+            {
+                _loaded = null;
+                return false;
+            }
+            _loaded = font;
+            return true;
+        }
+    }
+
     /// <summary>Builds the fallback chain TMP searches for a font asset.</summary>
     internal static class TmpFontChain
     {
@@ -130,9 +134,9 @@ namespace LocaSync.Editor.GlyphScanner
 
         public static List<IGlyphLookup> ToLookups(IEnumerable<TMP_FontAsset> fonts)
         {
-            TmpGlyphLookup.ResetFaceCache();
+            var faces = new FontFaceLoader();
             var lookups = new List<IGlyphLookup>();
-            foreach (TMP_FontAsset font in fonts) lookups.Add(new TmpGlyphLookup(font));
+            foreach (TMP_FontAsset font in fonts) lookups.Add(new TmpGlyphLookup(font, faces));
             return lookups;
         }
 

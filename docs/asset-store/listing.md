@@ -17,7 +17,7 @@ Tools / Localization
 Free
 
 ## Version
-0.1.4 (matches the GitHub release; the changelog is in `Documentation/CHANGELOG.md`)
+0.1.5 (matches the GitHub release; the changelog is in `Documentation/CHANGELOG.md`)
 
 ## Unity version
 Upload from Unity 2022.3 (tested on 2022.3.62f3). Also tested on Unity 6000.6.
@@ -65,7 +65,7 @@ localization, textmeshpro, tmp, font, glyph, missing characters, cjk, csv, googl
 - Issues: https://github.com/lsg000/locasync-glyph-scanner/issues
 - Email: `TODO: publisher support email`
 
-## Release notes (0.1.4)
+## Release notes (0.1.5)
 First Asset Store release. Scans CSV/TSV files and Google Sheets against each language's TextMeshPro font and fallback chain, and copies the missing characters for the Font Asset Creator.
 
 ## Notes for the reviewer (Submit dialog)

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.5] - 2026-11-18
+
+### Changed
+- Removed a mutable static field (the cached font face) that the Asset Store Validator flags under "Check Static Variables". The cache now belongs to each scan. Behaviour is unchanged; all 89 EditMode tests pass on Unity 2022.3.62f3 and 6000.6.9f1.
+
 ## [0.1.4] - 2026-11-18
 
 ### Fixed
