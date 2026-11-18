@@ -69,7 +69,7 @@ namespace LocaSync.Editor.GlyphScanner
                 return false;
             }
 
-            url = "https://docs.google.com/spreadsheets/d/" + idMatch.Groups[1].Value + "/export?format=csv&gid=" + (gid ?? "0");
+            url = "https://docs.google.com/spreadsheets/d/" + idMatch.Groups[1].Value + "/export?format=csv" + (gid != null ? "&gid=" + gid : string.Empty);
             return true;
         }
     }

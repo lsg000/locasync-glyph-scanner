@@ -17,7 +17,7 @@ Tools / Localization
 Free
 
 ## Version
-0.1.3 (matches the GitHub release; the changelog is in `Documentation/CHANGELOG.md`)
+0.1.4 (matches the GitHub release; the changelog is in `Documentation/CHANGELOG.md`)
 
 ## Unity version
 Upload from Unity 2022.3 (tested on 2022.3.62f3). Also tested on Unity 6000.6.
@@ -36,6 +36,7 @@ One click copies the missing characters, or their hex ranges, ready to paste int
 
 **Key features**
 - Checks every character against the font asset and its full fallback chain, in TextMeshPro's own search order: the font, its fallbacks depth-first, then the TMP Settings fallbacks and default font.
+- Understands Dynamic font assets: characters a Dynamic font adds from its source font file at runtime are not reported as missing.
 - Reads CSV and TSV files, text assets, and Google Sheets share or publish links. No API key, no OAuth.
 - Ignores TextMeshPro rich text tags (`<b>`, `<color>`, `<sprite>`, `<link>`…) and simple placeholders (`{0}`, `{name}`, `{0:N2}`), so you only see characters that will actually be rendered.
 - Handles emoji and other characters outside the Basic Multilingual Plane correctly.
@@ -53,7 +54,7 @@ Any localization setup that can export a CSV: Unity Localization, I2 Localizatio
 - Editor-only. No runtime code and no impact on builds. Works with any render pipeline (Built-in, URP, HDRP), because it doesn't render anything at runtime.
 - Menu: Window > LocaSync > Glyph Scanner
 - Full C# source included, in its own namespace and assembly definitions.
-- Offline documentation: `Documentation/README.md`
+- Offline documentation: `Documentation/LocaSync Glyph Scanner Manual.pdf` (plus `README.md` and `CHANGELOG.md`)
 - Sample: `Samples/Sample CSV` (English, Korean, Japanese and Simplified Chinese, with rich text, placeholders, a multi-line cell and an emoji)
 - Network access: only when you scan a Google Sheets or other URL source. The tool downloads that URL and nothing else. It sends no analytics or telemetry.
 
@@ -64,7 +65,7 @@ localization, textmeshpro, tmp, font, glyph, missing characters, cjk, csv, googl
 - Issues: https://github.com/lsg000/locasync-glyph-scanner/issues
 - Email: `TODO: publisher support email`
 
-## Release notes (0.1.3)
+## Release notes (0.1.4)
 First Asset Store release. Scans CSV/TSV files and Google Sheets against each language's TextMeshPro font and fallback chain, and copies the missing characters for the Font Asset Creator.
 
 ## Notes for the reviewer (Submit dialog)

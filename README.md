@@ -8,7 +8,7 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 
 - Works with any table you can export as CSV: Unity Localization, I2 Localization, or your own sheet.
 - Ignores TMP rich text tags and simple placeholders (`{0}`, `{name}`).
-- Follows the fallback chain the way TMP does at runtime, including the TMP Settings fallbacks.
+- Follows the fallback chain the way TMP does at runtime, including the TMP Settings fallbacks and the characters Dynamic fonts add from their source font file.
 - Shows which keys use each missing character, so you know what to send back to translation.
 - Handles emoji and other characters outside the Basic Multilingual Plane.
 - Editor-only. Adds nothing to your builds.
@@ -18,7 +18,7 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 Unity 2022.3+ or Unity 6, with TextMeshPro. Package Manager → **+** → **Add package from git URL…**
 
 ```
-https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner#v0.1.3
+https://github.com/lsg000/locasync-glyph-scanner.git?path=/com.locasync.glyph-scanner#v0.1.4
 ```
 
 ## Quick start

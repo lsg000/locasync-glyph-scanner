@@ -10,7 +10,7 @@ namespace LocaSync.Editor.GlyphScanner.Tests
         [TestCase("https://docs.google.com/spreadsheets/d/" + Id + "/edit#gid=123",
             "https://docs.google.com/spreadsheets/d/" + Id + "/export?format=csv&gid=123")]
         [TestCase("https://docs.google.com/spreadsheets/d/" + Id + "/edit?usp=sharing",
-            "https://docs.google.com/spreadsheets/d/" + Id + "/export?format=csv&gid=0")]
+            "https://docs.google.com/spreadsheets/d/" + Id + "/export?format=csv")]
         [TestCase("  https://docs.google.com/spreadsheets/d/" + Id + "/edit?gid=7#gid=7  ",
             "https://docs.google.com/spreadsheets/d/" + Id + "/export?format=csv&gid=7")]
         public void Shared_links_become_export_links(string input, string expected)

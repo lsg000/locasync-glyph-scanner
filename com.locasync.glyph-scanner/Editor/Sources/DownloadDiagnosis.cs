@@ -31,6 +31,11 @@ namespace LocaSync.Editor.GlyphScanner
                     return "Google Sheets returned HTTP " + responseCode + ": the sheet is private, does not exist, or the " +
                            "link is incomplete. " + SharingHelp;
                 }
+                if (isGoogleSheet && responseCode == 400)
+                {
+                    return "Google Sheets returned HTTP 400. This usually means the tab in the link (gid=...) no longer " +
+                           "exists. Open the tab you want to scan in Google Sheets and copy the link again.";
+                }
                 return "Download failed: HTTP " + responseCode + ".";
             }
 

@@ -34,7 +34,7 @@
 <body>
 
 <h1><span class="brand">LocaSync</span> Glyph Scanner</h1>
-<div class="subtitle">User manual · version 0.1.3 · Unity 2022.3 and newer · by TinyRig</div>
+<div class="subtitle">User manual · version 0.1.4 · Unity 2022.3 and newer · by TinyRig</div>
 
 <div class="toc">
   <strong>Contents</strong>
@@ -106,6 +106,8 @@
   <li>Or use <strong>File › Share › Publish to web</strong>, choose <em>Comma-separated values (.csv)</em> and paste the published link.</li>
 </ol>
 <div class="note warn">Prefer CSV over TSV for Google Sheets. Google's TSV export replaces line breaks inside a cell with spaces, while CSV keeps them.</div>
+<h3>5.2 File encoding</h3>
+<p>Files must be saved as <strong>UTF-8</strong> (UTF-16 with a byte order mark also works). Excel's plain <em>CSV (Comma delimited)</em> format saves in a legacy encoding such as CP949 or Shift-JIS; choose <em>CSV UTF-8 (Comma delimited)</em> instead. If a file is in the wrong encoding, the scanner says so instead of scanning garbled text.</p>
 
 <h2>6. Table format</h2>
 <ul>
@@ -124,11 +126,14 @@
 <p>Each language row shows:</p>
 <ul>
   <li><strong>N missing / M unique</strong>: how many distinct characters the column uses, and how many of them no font in the chain contains.</li>
-  <li><strong>Font chain</strong>: the fonts searched, in TextMeshPro's runtime order (the font, its fallbacks depth-first, then the TMP Settings fallbacks and default font), with the number of characters each one supplied.</li>
+  <li><strong>Font chain</strong>: the fonts searched, in TextMeshPro's runtime order (the font, its fallbacks depth-first, then the TMP Settings fallbacks and default font), with the number of characters each one supplied. For a Dynamic font it also says how many of those it adds at runtime.</li>
   <li><strong>Missing characters</strong>, sorted and de-duplicated, with <strong>Copy Characters</strong> and <strong>Copy Hex Ranges</strong> buttons.</li>
   <li><strong>Where each character is used</strong>: each missing character, its code point and up to three keys that use it.</li>
 </ul>
-<div class="note">If the chain contains a <strong>Dynamic</strong> font asset, a note is shown. Dynamic fonts add glyphs from their source font file at runtime, so a listed character may still render if that source file contains it.</div>
+<h3>7.1 Dynamic font assets</h3>
+<p>A <strong>Dynamic</strong> font asset adds glyphs from its source font file at runtime, so the scanner checks that file as well as the atlas. Characters the source file contains are <em>not</em> reported as missing. Instead, a note says how many characters the font adds at runtime, and <strong>Copy Runtime-Added Characters</strong> copies them in case you prefer to bake them into a static atlas. Scanning does not add anything to the font asset.</p>
+<div class="note warn">A Dynamic font with a single atlas texture stops adding characters once that texture is full. If you rely on a Dynamic font for many characters, turn on <strong>Multi Atlas Textures</strong> in the font asset. The scanner reminds you when it is off.</div>
+<div class="note"><strong>Dynamic OS</strong> font assets take glyphs from fonts installed on the player's device, which cannot be checked in the editor. For those, and for a Dynamic font whose source font file is missing, only the characters already in the atlas are counted and a warning names the font.</div>
 
 <h2>8. Fixing missing characters in the Font Asset Creator</h2>
 <ol>
@@ -152,10 +157,12 @@
   <tr><th>Message or symptom</th><th>What to do</th></tr>
   <tr><td>"LocaSync Glyph Scanner needs TextMeshPro…"</td><td>Install TextMeshPro (Unity 2022.3) or Unity UI 2.0+ (Unity 6) from the Package Manager.</td></tr>
   <tr><td>"Google Sheets returned HTTP 401/403/404…" or "Google returned a web page…"</td><td>The sheet is private, missing, or the link is incomplete. Share it as <em>Anyone with the link</em> or publish it to the web (section 5.1).</td></tr>
+  <tr><td>"Google Sheets returned HTTP 400…"</td><td>The tab in the link (<code>gid=…</code>) no longer exists. Open the tab you want in Google Sheets and copy the link again.</td></tr>
+  <tr><td>"The text is not valid UTF-8…"</td><td>The file is in a legacy encoding. Save it as <em>CSV UTF-8</em> (section 5.2) and scan again.</td></tr>
   <tr><td>"Download failed… Check your internet connection"</td><td>The URL could not be reached. Check the connection, proxy and URL.</td></tr>
   <tr><td>"Could not read the file (is it open in Excel?)"</td><td>Close the file in Excel or other programs that lock it, then scan again.</td></tr>
   <tr><td>"Column '…' not found"</td><td>The binding's column name does not match a header. Click <strong>Load Columns</strong> to see the exact headers.</td></tr>
-  <tr><td>A character is reported missing but renders in the game</td><td>Check whether a Dynamic font in the chain adds it at runtime (section 7), or whether the text object uses a different font than the one bound in the profile.</td></tr>
+  <tr><td>A character is reported missing but renders in the game</td><td>Check whether a warning under the results names a font that could not be fully checked (section 7.1), or whether the text object uses a different font than the one bound in the profile.</td></tr>
 </table>
 
 <h2>11. Scripting reference</h2>
@@ -164,8 +171,8 @@
   <tr><th>Type</th><th>Purpose</th></tr>
   <tr><td><code>DelimitedTextParser</code></td><td><code>DetectDelimiter(text)</code> and <code>Parse(text, delimiter)</code> for CSV/TSV.</td></tr>
   <tr><td><code>TextTable</code></td><td><code>FromRows(rows)</code> builds a header plus rows; <code>IndexOf(header)</code> finds a column.</td></tr>
-  <tr><td><code>GlyphCoverageScanner</code></td><td><code>Scan(entries, chain, options)</code> returns a <code>CoverageResult</code> with the missing code points and the keys that use them.</td></tr>
-  <tr><td><code>IGlyphLookup</code></td><td>One font in a chain (<code>Contains(codepoint)</code>, <code>IsDynamic</code>).</td></tr>
+  <tr><td><code>GlyphCoverageScanner</code></td><td><code>Scan(entries, chain, options)</code> returns a <code>CoverageResult</code> with the missing code points, the keys that use them, and the code points Dynamic fonts add at runtime.</td></tr>
+  <tr><td><code>IGlyphLookup</code></td><td>One font in a chain: <code>Contains(codepoint)</code> (in the atlas), <code>CanAddAtRuntime(codepoint)</code> (a Dynamic font's source file has it) and <code>Caveat</code>.</td></tr>
   <tr><td><code>CharacterSetFormatter</code></td><td><code>ToCharacters</code> and <code>ToHexRanges</code> for the Font Asset Creator.</td></tr>
   <tr><td><code>SheetUrlNormalizer</code></td><td>Turns Google Sheets share or publish links into direct CSV download URLs.</td></tr>
   <tr><td><code>GlyphScanProfile</code></td><td>The ScriptableObject that stores a scan setup.</td></tr>
@@ -176,7 +183,7 @@
   <li>Report issues and request features: <code>https://github.com/lsg000/locasync-glyph-scanner/issues</code></li>
   <li>The full version history is in <code>Documentation/CHANGELOG.md</code>.</li>
 </ul>
-<p class="meta">LocaSync Glyph Scanner 0.1.3.</p>
+<p class="meta">LocaSync Glyph Scanner 0.1.4.</p>
 
 </body>
 </html>

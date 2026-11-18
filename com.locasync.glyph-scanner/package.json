@@ -1,6 +1,6 @@
 {
   "name": "com.locasync.glyph-scanner",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "displayName": "LocaSync Glyph Scanner",
   "description": "Finds characters in your localization CSV/TSV or published Google Sheet that are missing from the TextMeshPro font asset and fallback chain assigned to each language, and copies them ready to paste into the Font Asset Creator. Editor-only.",
   "unity": "2022.3",

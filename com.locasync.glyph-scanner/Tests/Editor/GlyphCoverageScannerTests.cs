@@ -73,17 +73,22 @@ namespace LocaSync.Editor.GlyphScanner.Tests
         sealed class FakeLookup : IGlyphLookup
         {
             readonly HashSet<uint> _codepoints;
+            readonly HashSet<uint> _sourceFile;
 
-            public FakeLookup(string name, string characters, bool isDynamic = false)
+            /// <param name="characters">Characters already in the font asset.</param>
+            /// <param name="sourceFileCharacters">Characters a Dynamic font can add from its source font file.</param>
+            public FakeLookup(string name, string characters, string sourceFileCharacters = "", string caveat = null)
             {
                 Name = name;
-                IsDynamic = isDynamic;
+                Caveat = caveat;
                 _codepoints = new HashSet<uint>(CodepointCollector.Enumerate(characters));
+                _sourceFile = new HashSet<uint>(CodepointCollector.Enumerate(sourceFileCharacters));
             }
 
             public string Name { get; }
-            public bool IsDynamic { get; }
+            public string Caveat { get; }
             public bool Contains(uint codepoint) => _codepoints.Contains(codepoint);
+            public bool CanAddAtRuntime(uint codepoint) => _sourceFile.Contains(codepoint);
         }
 
         static ScanEntry[] Entries(params string[] keyTextPairs)
@@ -137,14 +142,43 @@ namespace LocaSync.Editor.GlyphScanner.Tests
         }
 
         [Test]
-        public void Flags_chains_that_contain_a_dynamic_font()
+        public void Characters_a_dynamic_font_adds_at_runtime_are_not_missing()
         {
-            var staticOnly = GlyphCoverageScanner.Scan(Entries("k", "a"), new IGlyphLookup[] { new FakeLookup("S", "a") });
-            var withDynamic = GlyphCoverageScanner.Scan(Entries("k", "a"),
-                new IGlyphLookup[] { new FakeLookup("S", "a"), new FakeLookup("D", "", isDynamic: true) });
+            var chain = new IGlyphLookup[] { new FakeLookup("Static", "ab"), new FakeLookup("Dynamic", "c", sourceFileCharacters: "가나") };
 
-            Assert.IsFalse(staticOnly.ChainHasDynamicFont);
-            Assert.IsTrue(withDynamic.ChainHasDynamicFont);
+            var result = GlyphCoverageScanner.Scan(Entries("k", "abc가나中"), chain);
+
+            CollectionAssert.AreEqual(new uint[] { 0x4E2D }, result.Missing);            // 中: in no atlas and no source file
+            CollectionAssert.AreEqual(new uint[] { 0xAC00, 0xB098 }, result.AddedAtRuntime);
+            CollectionAssert.AreEqual(new[] { 2, 3 }, result.CoveredCountByChainIndex);
+            CollectionAssert.AreEqual(new[] { 0, 2 }, result.AddedAtRuntimeCountByChainIndex);
+        }
+
+        [Test]
+        public void A_dynamic_font_is_asked_before_later_fonts_in_the_chain()
+        {
+            // TMP adds the character to the first Dynamic font that has it, even if a later font already contains it.
+            var chain = new IGlyphLookup[] { new FakeLookup("Dynamic", "", sourceFileCharacters: "가"), new FakeLookup("Static", "가") };
+
+            var result = GlyphCoverageScanner.Scan(Entries("k", "가"), chain);
+
+            CollectionAssert.AreEqual(new[] { 1, 0 }, result.CoveredCountByChainIndex);
+            CollectionAssert.AreEqual(new uint[] { 0xAC00 }, result.AddedAtRuntime);
+        }
+
+        [Test]
+        public void Caveats_of_fonts_that_cannot_be_checked_are_collected_once()
+        {
+            var exact = GlyphCoverageScanner.Scan(Entries("k", "a"), new IGlyphLookup[] { new FakeLookup("S", "a") });
+            var unsure = GlyphCoverageScanner.Scan(Entries("k", "a"), new IGlyphLookup[]
+            {
+                new FakeLookup("S", "a"),
+                new FakeLookup("OS1", "", caveat: "uses OS fonts"),
+                new FakeLookup("OS2", "", caveat: "uses OS fonts"),
+            });
+
+            CollectionAssert.IsEmpty(exact.Caveats);
+            CollectionAssert.AreEqual(new[] { "uses OS fonts" }, unsure.Caveats);
         }
 
         [Test]

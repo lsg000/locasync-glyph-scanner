@@ -84,7 +84,7 @@ namespace LocaSync.Editor.GlyphScanner.Tests
         [Test]
         public void Skips_characters_that_need_no_glyph()
         {
-            var codepoints = CodepointCollector.Enumerate("가\n\t​‍️﻿나").ToList();
+            var codepoints = CodepointCollector.Enumerate("가\n\t\u200B\u200D\uFE0F\uFEFF나").ToList();
 
             CollectionAssert.AreEqual(new uint[] { 0xAC00, 0xB098 }, codepoints);
         }

@@ -7,6 +7,7 @@ LocaSync reads your localization table (a CSV/TSV file, or a Google Sheet withou
 - Works with any table you can export as CSV: Unity Localization, I2 Localization, or your own sheet.
 - Ignores TMP rich text tags (`<b>`, `<color=#FF0000>`, `<sprite=1>` …) and simple placeholders (`{0}`, `{name}`, `{0:N2}`). Keeps `<noparse>` content.
 - Follows the fallback chain the way TMP does at runtime: the font, its fallbacks depth-first, then the TMP Settings fallbacks and default font.
+- Understands Dynamic font assets: characters a Dynamic font adds from its source font file at runtime are not reported as missing.
 - Handles emoji and other characters outside the Basic Multilingual Plane as single characters.
 - Editor-only. Adds nothing to your builds.
 
@@ -39,7 +40,9 @@ The first row must be a header row. Rows with an empty key, or a key starting wi
 
 ## Notes
 
-- **Dynamic fonts**: a Dynamic font asset adds glyphs from its source font file at runtime. A character reported missing from a chain that contains a Dynamic font may still render, but only if the source font file has it. The scanner tells you when this applies.
+- **Dynamic fonts**: a Dynamic font asset adds glyphs from its source font file at runtime, so the scanner checks that file too. Characters it can supply are not reported as missing, and the report shows how many each Dynamic font adds at runtime. A Dynamic font with a single atlas texture stops adding characters once the texture is full, so turn on *Multi Atlas Textures* if you rely on it for many characters.
+- **Dynamic OS fonts** take glyphs from fonts installed on the player's device. That cannot be checked in the editor, so only the characters already in the atlas are counted, and the scanner warns you when this applies.
+- **Encoding**: files must be UTF-8, or UTF-16 with a byte order mark. In Excel, save as *CSV UTF-8*. A file in a legacy encoding (CP949, Shift-JIS …) is reported instead of being scanned as garbled text.
 - **Plural / select forms** such as `{0:plural:item|items}` are scanned as written, because their words are rendered.
 - **Google Sheets: prefer CSV.** Share links are fetched as CSV automatically. If you publish to the web, choose CSV rather than TSV: Google's TSV export turns line breaks inside a cell into spaces, while CSV keeps them.
-- The scanner reads the font asset's character table directly. It does not call `HasCharacters` with `tryAddCharacter`, so scanning never changes your font assets.
+- The scanner reads the font asset's character table and, for Dynamic fonts, the source font file. It does not call `HasCharacters` with `tryAddCharacter`, so scanning never changes your font assets.

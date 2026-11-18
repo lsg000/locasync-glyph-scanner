@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -19,10 +18,14 @@ namespace LocaSync.Editor.GlyphScanner
             public string Column;
             public TMP_FontAsset Font;
             public string Error;
-            public List<string> ChainNames = new List<string>();
             public CoverageResult Coverage;
+            public string ChainSummary = string.Empty;
             public string MissingCharacters = string.Empty;
             public string MissingHexRanges = string.Empty;
+
+            /// <summary>One line per Dynamic font that supplies characters from its source font file at runtime.</summary>
+            public List<string> RuntimeNotes = new List<string>();
+            public string RuntimeCharacters = string.Empty;
             public bool Expanded = true;
             public bool ShowDetails;
         }
@@ -218,7 +221,8 @@ namespace LocaSync.Editor.GlyphScanner
                         SetStatus("Assign a CSV asset to scan.", MessageType.Warning);
                         return;
                     }
-                    onLoaded(_profile.textAsset.text);
+                    if (!TryDecode(_profile.textAsset.bytes, out string assetText)) return;
+                    onLoaded(assetText);
                     return;
 
                 case GlyphScanProfile.SourceKind.FilePath:
@@ -228,16 +232,17 @@ namespace LocaSync.Editor.GlyphScanner
                         SetStatus("File not found: " + _profile.filePath, MessageType.Warning);
                         return;
                     }
-                    string fileText;
+                    byte[] fileBytes;
                     try
                     {
-                        fileText = File.ReadAllText(fullPath, Encoding.UTF8);
+                        fileBytes = File.ReadAllBytes(fullPath);
                     }
                     catch (IOException exception)
                     {
                         SetStatus("Could not read the file (is it open in Excel?): " + exception.Message, MessageType.Error);
                         return;
                     }
+                    if (!TryDecode(fileBytes, out string fileText)) return;
                     onLoaded(fileText);
                     return;
 
@@ -254,8 +259,15 @@ namespace LocaSync.Editor.GlyphScanner
                         {
                             if (this == null) return;
                             _busy = false;
-                            SetStatus(null, MessageType.None);
-                            onLoaded(text);
+                            if (TextDecoder.LooksWronglyDecoded(text))
+                            {
+                                SetStatus(TextDecoder.WrongEncodingMessage, MessageType.Error);
+                            }
+                            else
+                            {
+                                SetStatus(null, MessageType.None);
+                                onLoaded(text);
+                            }
                             Repaint();
                         },
                         message =>
@@ -267,6 +279,14 @@ namespace LocaSync.Editor.GlyphScanner
                         });
                     return;
             }
+        }
+
+        /// <summary>Decodes file bytes strictly. On failure it sets the status and returns false.</summary>
+        bool TryDecode(byte[] bytes, out string text)
+        {
+            if (TextDecoder.TryDecode(bytes, out text) && !TextDecoder.LooksWronglyDecoded(text)) return true;
+            SetStatus(TextDecoder.WrongEncodingMessage, MessageType.Error);
+            return false;
         }
 
         TextTable ParseTable(string text)
@@ -350,11 +370,41 @@ namespace LocaSync.Editor.GlyphScanner
             }
 
             List<TMP_FontAsset> chain = TmpFontChain.Resolve(binding.font, _profile.includeTmpSettingsFallbacks);
-            report.ChainNames = chain.Select(f => f.name).ToList();
-            report.Coverage = GlyphCoverageScanner.Scan(entries, TmpFontChain.ToLookups(chain), options);
-            report.MissingCharacters = CharacterSetFormatter.ToCharacters(report.Coverage.Missing);
-            report.MissingHexRanges = CharacterSetFormatter.ToHexRanges(report.Coverage.Missing);
+            CoverageResult coverage = GlyphCoverageScanner.Scan(entries, TmpFontChain.ToLookups(chain), options);
+            report.Coverage = coverage;
+            report.MissingCharacters = CharacterSetFormatter.ToCharacters(coverage.Missing);
+            report.MissingHexRanges = CharacterSetFormatter.ToHexRanges(coverage.Missing);
+            report.RuntimeCharacters = CharacterSetFormatter.ToCharacters(coverage.AddedAtRuntime);
+            DescribeChain(report, chain);
             return report;
+        }
+
+        /// <summary>Builds the "Font chain" line and the notes about characters a Dynamic font adds at runtime.</summary>
+        static void DescribeChain(ColumnReport report, List<TMP_FontAsset> chain)
+        {
+            CoverageResult coverage = report.Coverage;
+            var parts = new List<string>();
+            for (int i = 0; i < chain.Count; i++)
+            {
+                TMP_FontAsset font = chain[i];
+                int covered = coverage.CoveredCountByChainIndex[i];
+                int atRuntime = coverage.AddedAtRuntimeCountByChainIndex[i];
+                parts.Add(atRuntime == 0
+                    ? $"{font.name} ({covered})"
+                    : $"{font.name} ({covered}, {atRuntime} added at runtime)");
+                if (atRuntime == 0) continue;
+
+                string note = $"{atRuntime} character(s) are not in an atlas yet. '{font.name}' is a Dynamic font asset " +
+                              "and adds them from its source font file at runtime, so they will render.";
+                if (!font.isMultiAtlasTexturesEnabled)
+                {
+                    note += $" Its atlas is a single {font.atlasWidth}×{font.atlasHeight} texture: once that is full, " +
+                            "further characters will not render. Turn on Multi Atlas Textures in the font asset if " +
+                            "you rely on it for many characters.";
+                }
+                report.RuntimeNotes.Add(note);
+            }
+            report.ChainSummary = string.Join("  →  ", parts);
         }
 
         // ---------------------------------------------------------------- results
@@ -399,13 +449,19 @@ namespace LocaSync.Editor.GlyphScanner
         {
             CoverageResult coverage = report.Coverage;
 
-            var chainParts = new List<string>();
-            for (int i = 0; i < report.ChainNames.Count; i++)
-            {
-                chainParts.Add($"{report.ChainNames[i]} ({coverage.CoveredCountByChainIndex[i]})");
-            }
-            EditorGUILayout.LabelField("Font chain", string.Join("  →  ", chainParts), EditorStyles.wordWrappedMiniLabel);
+            EditorGUILayout.LabelField("Font chain", report.ChainSummary, EditorStyles.wordWrappedMiniLabel);
             EditorGUILayout.LabelField("Entries scanned", coverage.EntryCount.ToString());
+
+            if (report.RuntimeNotes.Count > 0)
+            {
+                EditorGUILayout.HelpBox(string.Join("\n", report.RuntimeNotes), MessageType.Info);
+                if (GUILayout.Button(new GUIContent("Copy Runtime-Added Characters",
+                        "Copies the characters a Dynamic font adds at runtime, in case you prefer to bake them into a static atlas."),
+                        EditorStyles.miniButton))
+                {
+                    Copy(report.RuntimeCharacters, "Runtime-added characters copied");
+                }
+            }
 
             if (coverage.Missing.Count == 0)
             {
@@ -413,12 +469,8 @@ namespace LocaSync.Editor.GlyphScanner
                 return;
             }
 
-            if (coverage.ChainHasDynamicFont)
-            {
-                EditorGUILayout.HelpBox(
-                    "The chain contains a Dynamic font asset. Characters listed here are not in its atlas yet; they will " +
-                    "still render at runtime if the font's source file contains them.", MessageType.Info);
-            }
+            // Fonts the scanner could not fully check: some of the characters below may still render.
+            foreach (string caveat in coverage.Caveats) EditorGUILayout.HelpBox(caveat, MessageType.Warning);
 
             float width = Mathf.Max(100f, position.width - 40f);
             float height = EditorStyles.textArea.CalcHeight(new GUIContent(report.MissingCharacters), width);

@@ -26,6 +26,15 @@ namespace LocaSync.Editor.GlyphScanner.Tests
         }
 
         [Test]
+        public void Google_bad_request_points_at_the_tab_in_the_link()
+        {
+            string message = DownloadDiagnosis.Describe(SheetUrl, true, 400, "text/html; charset=utf-8", "HTTP/1.1 400");
+
+            StringAssert.Contains("HTTP 400", message);
+            StringAssert.Contains("gid", message);
+        }
+
+        [Test]
         public void Google_sign_in_page_explains_sharing()
         {
             string message = DownloadDiagnosis.Describe(SheetUrl, true, 200, "text/html; charset=utf-8", null);

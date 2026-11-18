@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.4] - 2026-11-18
+
+### Fixed
+- Dynamic font assets no longer cause false positives. A Dynamic font adds characters from its source font file at runtime, so the scanner now checks that file too, and characters it can supply are no longer listed as missing. The report shows how many characters each Dynamic font adds at runtime, and **Copy Runtime-Added Characters** copies them in case you prefer to bake them into a static atlas. The font asset itself is not modified.
+- A file that is not UTF-8 (for example Excel's plain "CSV" format, which saves as CP949 or Shift-JIS) is now reported with instructions instead of being scanned as garbled text. UTF-16 files with a byte order mark are read.
+- A Google Sheets link without a tab id (`gid`) now downloads the first tab. It used to ask for `gid=0`, which fails when that tab has been deleted. HTTP 400 from Google now explains that the tab in the link no longer exists.
+
+### Changed
+- Fonts the scanner cannot fully check (Dynamic OS fonts, or a Dynamic font whose source font file is missing) are named in a warning next to the results.
+- Scripting API: `IGlyphLookup.IsDynamic` and `CoverageResult.ChainHasDynamicFont` are replaced by `IGlyphLookup.CanAddAtRuntime`, `IGlyphLookup.Caveat`, `CoverageResult.AddedAtRuntime`, `CoverageResult.AddedAtRuntimeCountByChainIndex` and `CoverageResult.Caveats`.
+
+### Verified
+- Unity 2022.3.62f3 with TextMeshPro 3.0.9 and Unity 6000.6.9f1 with uGUI 2.6.0: all 89 EditMode tests pass. They include a scan against TMP's default Dynamic fallback font that checks the font asset is left unchanged.
+
 ## [0.1.3] - 2026-11-17
 
 ### Changed

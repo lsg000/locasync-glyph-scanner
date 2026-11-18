@@ -50,7 +50,7 @@ namespace LocaSync.Editor.GlyphScanner
             var row = new List<string>();
             var field = new StringBuilder();
             bool inQuotes = false;
-            int i = text[0] == '﻿' ? 1 : 0;
+            int i = text[0] == '\uFEFF' ? 1 : 0;
 
             for (; i < text.Length; i++)
             {

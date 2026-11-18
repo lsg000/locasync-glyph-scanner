@@ -7,10 +7,20 @@ namespace LocaSync.Editor.GlyphScanner
     {
         string Name { get; }
 
-        /// <summary>True when the font can add glyphs from its source file at runtime (TMP Dynamic atlas).</summary>
-        bool IsDynamic { get; }
+        /// <summary>
+        /// Non-null when the font may render characters the scanner cannot verify in the editor (for example a
+        /// Dynamic font whose source font file cannot be read). The text explains why.
+        /// </summary>
+        string Caveat { get; }
 
+        /// <summary>True when the character is already in the font asset (its atlas has the glyph).</summary>
         bool Contains(uint codepoint);
+
+        /// <summary>
+        /// True when the character is not in the font asset yet but the font adds it at runtime, as a TMP Dynamic
+        /// font does when its source font file contains the glyph. Only asked when <see cref="Contains"/> is false.
+        /// </summary>
+        bool CanAddAtRuntime(uint codepoint);
     }
 
     public sealed class ScanOptions
@@ -37,16 +47,26 @@ namespace LocaSync.Editor.GlyphScanner
         public int EntryCount;
         public int UniqueCodepointCount;
 
-        /// <summary>Missing code points, ascending.</summary>
+        /// <summary>Code points no font in the chain can render, ascending.</summary>
         public readonly List<uint> Missing = new List<uint>();
 
         /// <summary>For each missing code point, the first few keys whose text uses it.</summary>
         public readonly Dictionary<uint, List<string>> MissingKeys = new Dictionary<uint, List<string>>();
 
+        /// <summary>
+        /// Code points that are in no atlas yet but that a Dynamic font in the chain adds at runtime, ascending.
+        /// They render, so they are not in <see cref="Missing"/>.
+        /// </summary>
+        public readonly List<uint> AddedAtRuntime = new List<uint>();
+
         /// <summary>How many unique code points each chain entry supplied (same order as the chain).</summary>
         public int[] CoveredCountByChainIndex = new int[0];
 
-        public bool ChainHasDynamicFont;
+        /// <summary>The part of <see cref="CoveredCountByChainIndex"/> that the font adds at runtime.</summary>
+        public int[] AddedAtRuntimeCountByChainIndex = new int[0];
+
+        /// <summary>Reasons why some fonts in the chain could not be fully checked. Empty when the result is exact.</summary>
+        public readonly List<string> Caveats = new List<string>();
     }
 
     public static class GlyphCoverageScanner
@@ -77,15 +97,20 @@ namespace LocaSync.Editor.GlyphScanner
                 EntryCount = entryCount,
                 UniqueCodepointCount = used.Count,
                 CoveredCountByChainIndex = new int[chain.Count],
+                AddedAtRuntimeCountByChainIndex = new int[chain.Count],
             };
             for (int i = 0; i < chain.Count; i++)
             {
-                if (chain[i].IsDynamic) result.ChainHasDynamicFont = true;
+                string caveat = chain[i].Caveat;
+                if (!string.IsNullOrEmpty(caveat) && !result.Caveats.Contains(caveat)) result.Caveats.Add(caveat);
             }
 
             foreach (uint codepoint in used)
             {
+                // TextMeshPro asks each font in turn: is the character in the asset, and if not, can this (Dynamic)
+                // font add it from its source file? Only then does it move on to the next font in the chain.
                 int coveredBy = -1;
+                bool addedAtRuntime = false;
                 for (int i = 0; i < chain.Count; i++)
                 {
                     if (chain[i].Contains(codepoint))
@@ -93,16 +118,26 @@ namespace LocaSync.Editor.GlyphScanner
                         coveredBy = i;
                         break;
                     }
+                    if (chain[i].CanAddAtRuntime(codepoint))
+                    {
+                        coveredBy = i;
+                        addedAtRuntime = true;
+                        break;
+                    }
                 }
 
-                if (coveredBy >= 0)
-                {
-                    result.CoveredCountByChainIndex[coveredBy]++;
-                }
-                else
+                if (coveredBy < 0)
                 {
                     result.Missing.Add(codepoint);
                     result.MissingKeys[codepoint] = keysByCodepoint[codepoint];
+                    continue;
+                }
+
+                result.CoveredCountByChainIndex[coveredBy]++;
+                if (addedAtRuntime)
+                {
+                    result.AddedAtRuntimeCountByChainIndex[coveredBy]++;
+                    result.AddedAtRuntime.Add(codepoint);
                 }
             }
             return result;

@@ -18,6 +18,10 @@ The UPM route needs a separate enrollment and a namespace that Unity assigns, so
 
 Images are rendered from `docs/asset-store/images-src/*.html` with `bash tools/render_store_images.sh`.
 
+## Status
+
+Done: publisher profile (TinyRig), Publishing Tools installed, draft created and filled in, Validator run, package uploaded from Unity 2022.3.62f3. Left: steps 7 (Preview and Submit) and the support email below. After a code change, rebuild the store folder, upload again with the Uploader (step 6) and update the version and release notes in the draft.
+
 ## Steps only you can do (your account)
 
 1. **Publisher profile**: create it at https://publisher.unity.com. Publisher name: **TinyRig**. The card, cover and `package.json` author already use it. LocaSync stays the product line name.
@@ -41,4 +45,4 @@ Images are rendered from `docs/asset-store/images-src/*.html` with `bash tools/r
 - **License**: the GitHub version is MIT; the Asset Store version is distributed under the Asset Store EULA. You own the code, so dual distribution is fine. `LICENSE.md` is left out of the store folder.
 - **Cover image**: the guidelines allow only the title, publisher and tagline as text. The cover's glyph tiles (A, 가, あ, 中) are illustration. If the review rejects them as text, swap in tofu-box shapes only.
 - **Installing both copies**: the store copy and the git (UPM) copy share assembly names and GUIDs. The README says to install only one.
-- **2022.3 UI**: compiling and all 77 tests pass on 2022.3, but the scanner window hasn't been opened on screen in 2022.3. Open it once before uploading.
+- **2022.3 UI**: compiling and all 89 tests pass on 2022.3, but the scanner window hasn't been opened on screen in 2022.3. Open it once before uploading.

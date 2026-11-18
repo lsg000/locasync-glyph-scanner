@@ -34,7 +34,7 @@ namespace LocaSync.Editor.GlyphScanner.Tests
         [Test]
         public void Handles_crlf_and_bom()
         {
-            var rows = DelimitedTextParser.Parse("﻿key,en\r\nx,y\r\n", ',');
+            var rows = DelimitedTextParser.Parse("\uFEFFkey,en\r\nx,y\r\n", ',');
 
             Assert.AreEqual(2, rows.Count);
             Assert.AreEqual("key", rows[0][0]);
