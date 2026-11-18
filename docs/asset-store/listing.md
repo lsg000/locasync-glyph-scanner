@@ -49,6 +49,8 @@ One click copies the missing characters, or their hex ranges, ready to paste int
 **Works with**
 Any localization setup that can export a CSV: Unity Localization, I2 Localization, or your own spreadsheet.
 
+Tested on Unity 2022.3 LTS and Unity 6 (6000.6), with the same automated test suite passing on both.
+
 ## Technical details
 - Requirements: Unity 2022.3 or newer, TextMeshPro (`com.unity.textmeshpro` on 2022.3, `com.unity.ugui` 2.0+ on Unity 6). If TextMeshPro is missing, the tool shows a notice that says what to install. It does not cause compile errors.
 - Editor-only. No runtime code and no impact on builds. Works with any render pipeline (Built-in, URP, HDRP), because it doesn't render anything at runtime.
